@@ -1,0 +1,27 @@
+h2 {
+    margin: 0 0 10px;
+    display: inline-block;
+  }
+  
+  pre {
+    background-color: #f5f5f5;
+    padding: 15px;
+  }
+
+  .center {
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+    margin-top: 10px;
+    color: #0065AB;
+    font-size: 20px;
+    top: 10px;
+}
+
+.wholearea {
+    width : 50%;
+    height: 10%
+}
+.next{
+    float: right;
+}
