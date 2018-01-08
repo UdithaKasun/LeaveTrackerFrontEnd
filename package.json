@@ -23,6 +23,7 @@
     "@angular/router": "^5.0.0",
     "@webcomponents/custom-elements": "^1.0.0",
     "angular-calendar": "^0.23.1",
+    "bootstrap": "^3.3.7",
     "clarity-angular": "^0.10.21",
     "clarity-icons": "^0.10.21",
     "clarity-ui": "^0.10.21",

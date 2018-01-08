@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { ClarityModule } from "clarity-angular";
 import { CalendarModule } from 'angular-calendar';
 import { routing } from '../app/Router';
+import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './shared/header/header.component';
@@ -11,6 +12,7 @@ import { LoginComponent } from './login/login.component';
 import { LeaveCalendarComponent } from './member/leave-calendar/leave-calendar.component';
 import { LeaveHistoryComponent } from './member/leave-history/leave-history.component';
 import { MemberComponent } from './member/member.component';
+
 
 
 @NgModule({
@@ -27,7 +29,8 @@ import { MemberComponent } from './member/member.component';
     routing,
     BrowserModule,
     ClarityModule.forRoot(),
-    CalendarModule.forRoot()
+    CalendarModule.forRoot(),
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
