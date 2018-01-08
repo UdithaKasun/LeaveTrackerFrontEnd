@@ -25,3 +25,11 @@ h2 {
 .next{
     float: right;
 }
+
+.pendingLeave {
+    background-color: rgb(227, 188, 8) !important;
+}
+
+.approvedLeave {
+    background-color: #007cbb;
+}

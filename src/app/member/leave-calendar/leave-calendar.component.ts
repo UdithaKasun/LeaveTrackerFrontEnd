@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, ViewEncapsulation } from '@angular/core';
 import swal from 'sweetalert2';
 import {
   startOfDay,
@@ -11,6 +11,7 @@ import {
   addHours
 } from 'date-fns';
 import { Observable } from 'rxjs/Observable';
+import { CalendarMonthViewDay } from 'angular-calendar';
 
 const colors: any = {
   red: {
@@ -18,8 +19,8 @@ const colors: any = {
     secondary: '#FAE3E3'
   },
   blue: {
-    primary: '#1e90ff',
-    secondary: '#D1E8FF'
+    primary: '#007cbb',
+    secondary: '#FDF1BA'
   },
   yellow: {
     primary: '#e3bc08',
@@ -30,12 +31,25 @@ const colors: any = {
 
 @Component({
   selector: 'app-leave-calendar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './leave-calendar.component.html',
   styleUrls: ['./leave-calendar.component.css']
 })
 export class LeaveCalendarComponent implements OnInit {
   ngOnInit(): void {
     this.loadEvents();
+  }
+
+  beforeMonthViewRender({ body }: { body: CalendarMonthViewDay[] }): void {
+    body.forEach(day => {
+      if (day.events.length > 0 && day.events[0].title =="Pending Approval") {
+        day.cssClass = 'pendingLeave';
+      }
+      else if (day.events.length > 0 && day.events[0].title =="Leave Approved") {
+        day.cssClass = 'approvedLeave';
+      }
+    });
   }
 
   leaves = [{

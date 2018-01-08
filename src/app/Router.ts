@@ -4,11 +4,13 @@ import { LoginComponent } from '../app/login/login.component';
 import { LeaveCalendarComponent } from '../app/member/leave-calendar/leave-calendar.component';
 import { LeaveHistoryComponent } from '../app/member/leave-history/leave-history.component';
 import { MemberComponent } from '../app/member/member.component';
- 
+import { AuthGuardService as AuthGuard } from './services/auth-guard-service.service';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+
 export const routes: Routes = [  
-    {
+      {
         path: '',
-        component : LoginComponent,
+        redirectTo: '/login', pathMatch: 'full',
       },
       {
         path: 'login', 
@@ -17,13 +19,18 @@ export const routes: Routes = [
       {
         path: 'member', 
         component : MemberComponent,
+        canActivate: [AuthGuard],
 
         children: [
-            { path: '', redirectTo: 'leaveHistory', pathMatch: 'full' },
+            { path: '', redirectTo: 'leaveCalendar', pathMatch: 'full' },
             { path: 'leaveHistory', component: LeaveHistoryComponent },
             { path: 'leaveCalendar', component: LeaveCalendarComponent }
           ]
-      }
+      },
+      {
+        path: '**', 
+        component : PageNotFoundComponent,
+      },
 ];  
   
 export const routing: ModuleWithProviders = RouterModule.forRoot(routes); 

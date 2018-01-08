@@ -12,6 +12,12 @@ import { LoginComponent } from './login/login.component';
 import { LeaveCalendarComponent } from './member/leave-calendar/leave-calendar.component';
 import { LeaveHistoryComponent } from './member/leave-history/leave-history.component';
 import { MemberComponent } from './member/member.component';
+import { UserService } from './services/user-service.service';
+import { ApiService } from './services/api-service.service';
+import { JwtService } from './services/jwt-service.service';
+import { AuthGuardService as AuthGuard } from './services/auth-guard-service.service';
+import { HttpModule } from '@angular/http';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 
 
 
@@ -23,16 +29,18 @@ import { MemberComponent } from './member/member.component';
     LoginComponent,
     LeaveCalendarComponent,
     LeaveHistoryComponent,
-    MemberComponent
+    MemberComponent,
+    PageNotFoundComponent
   ],
   imports: [
     routing,
     BrowserModule,
+    HttpModule,
     ClarityModule.forRoot(),
     CalendarModule.forRoot(),
     FormsModule
   ],
-  providers: [],
+  providers: [UserService,ApiService,JwtService,AuthGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
