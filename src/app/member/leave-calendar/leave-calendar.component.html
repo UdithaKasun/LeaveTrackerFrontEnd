@@ -1,4 +1,13 @@
-<div class="row">
+<div *ngIf="showLoad  == true" class="content">
+    <span class="spinner spinner-inline spinner-lg">
+        Loading...
+    </span>
+    <span>
+        Loading...
+    </span>
+</div>
+<div *ngIf="showLoad == false">
+<div class="row" >
     <div class="col-xs-3">
         <span><button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('back')" class="btn btn-primary">Previous</button></span>
     </div>
@@ -14,4 +23,5 @@
 </mwl-calendar-month-view>
 <div class="row flex-items-xs-right">
         <button class="btn btn-primary">Submit</button>
+</div>
 </div>

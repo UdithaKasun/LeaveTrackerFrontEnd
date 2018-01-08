@@ -18,6 +18,7 @@ import { JwtService } from './services/jwt-service.service';
 import { AuthGuardService as AuthGuard } from './services/auth-guard-service.service';
 import { HttpModule } from '@angular/http';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { LeaveServiceService } from './services/leave-service.service';
 
 
 
@@ -40,7 +41,7 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
     CalendarModule.forRoot(),
     FormsModule
   ],
-  providers: [UserService,ApiService,JwtService,AuthGuard],
+  providers: [UserService,ApiService,JwtService,AuthGuard,LeaveServiceService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

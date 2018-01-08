@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import swal from 'sweetalert2';
 import {
   startOfDay,
@@ -12,6 +12,7 @@ import {
 } from 'date-fns';
 import { Observable } from 'rxjs/Observable';
 import { CalendarMonthViewDay } from 'angular-calendar';
+import { LeaveServiceService } from '../../services/leave-service.service';
 
 const colors: any = {
   red: {
@@ -37,22 +38,29 @@ const colors: any = {
   styleUrls: ['./leave-calendar.component.css']
 })
 export class LeaveCalendarComponent implements OnInit {
+
+  constructor(private leaveService: LeaveServiceService,private cdRef:ChangeDetectorRef) {
+
+  }
+  showLoad = true;
+
   ngOnInit(): void {
+    this.showLoad = true;
     this.loadEvents();
   }
 
   beforeMonthViewRender({ body }: { body: CalendarMonthViewDay[] }): void {
     body.forEach(day => {
-      if (day.events.length > 0 && day.events[0].title =="Pending Approval") {
+      if (day.events.length > 0 && day.events[0].title == "Pending Approval") {
         day.cssClass = 'pendingLeave';
       }
-      else if (day.events.length > 0 && day.events[0].title =="Leave Approved") {
+      else if (day.events.length > 0 && day.events[0].title == "Leave Approved") {
         day.cssClass = 'approvedLeave';
       }
     });
   }
 
-  leaves = [{
+  leaves2 = [{
     user_id: "U001",
     leave_from_date: "2018-01-17T18:30:00.000Z",
     leave_to_date: "2018-01-17T18:30:00.000Z",
@@ -74,6 +82,8 @@ export class LeaveCalendarComponent implements OnInit {
   }
   ];
 
+  leaves = [];
+
   empNewLeaves = [];
   empExistingLeaves = [];
 
@@ -85,43 +95,57 @@ export class LeaveCalendarComponent implements OnInit {
   events = [];
 
   loadEvents() {
-    this.leaves.forEach(leave => {
-      if (leave.leave_type == "PLANNED") {
 
-        var pendingEvent = {
-          title: 'Pending Approval',
-          leave_id : leave.leave_id,
-          start: startOfDay(new Date(leave.leave_from_date)),
-          end: endOfDay(new Date(leave.leave_to_date)),
-          color: colors.yellow,
-          draggable: false,
-          resizable: {
-            beforeStart: false,
-            afterEnd: false
+    this.leaveService.getLeavesByUserId()
+      .subscribe(data => {
+        console.log(data);
+        this.leaves = [];        
+        this.leaves = data.leaves;
+
+        if(this.leaves.length > 0){
+          this.leaves.forEach(leave => {
+            if (leave.leave_type == "PLANNED") {
+  
+              var pendingEvent = {
+                title: 'Pending Approval',
+                leave_id: leave.leave_id,
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.yellow,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+  
+              var approvedEvent = {
+                title: 'Leave Approved',
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.blue,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+  
+              if (leave.leave_status == "PENDING") {
+                this.events.push(pendingEvent);
+              }
+              else if (leave.leave_status == "APPROVED") {
+                this.events.push(approvedEvent);
+              }
+            }
           }
-        };
-
-        var approvedEvent = {
-          title: 'Leave Approved',
-          start: startOfDay(new Date(leave.leave_from_date)),
-          end: endOfDay(new Date(leave.leave_to_date)),
-          color: colors.blue,
-          draggable: false,
-          resizable: {
-            beforeStart: false,
-            afterEnd: false
-          }
-        };
-
-        if (leave.leave_status == "PENDING") {
-          this.events.push(pendingEvent);
+          );
         }
-        else if (leave.leave_status == "APPROVED") {
-          this.events.push(approvedEvent);
-        }
-      }
-    }
-    );
+        console.log(this.events);
+        this.showLoad = false;
+        this.cdRef.detectChanges();
+      })
+      console.log(this.showLoad);
   }
 
   calculateLeaveLength(startDate, endDate) {
@@ -161,13 +185,13 @@ export class LeaveCalendarComponent implements OnInit {
           user_id: "U001",
           leave_from_date: new Date(leave.start).toISOString(),
           leave_to_date: new Date(leave.end).toISOString(),
-          leave_count : this.calculateLeaveLength(leave.start,leave.end),
+          leave_count: this.calculateLeaveLength(leave.start, leave.end),
           leave_type: "PLANNED",
           leave_status: "PENDING",
           leave_approver_id: "L001"
         }
 
-        if(leave.leave_id){
+        if (leave.leave_id) {
           leaveDetails['leave_id'] = leave.leave_id;
           this.empExistingLeaves.push(leaveDetails);
         }
@@ -230,7 +254,7 @@ export class LeaveCalendarComponent implements OnInit {
       swal("Oops", "You cannot place leaves for today", "warning");
       return;
     }
-    
+
     var diffDays = this.getDateDifference(date);
 
     if (clickedObj.day.isPast && diffDays > 2 && clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Pending Approval") {
@@ -314,7 +338,7 @@ export class LeaveCalendarComponent implements OnInit {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
         return;
       }
@@ -352,7 +376,7 @@ export class LeaveCalendarComponent implements OnInit {
 
       if (leavesCount == 1 && diffDays < 7) {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate()+1);
+        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
         event.start = startOfDay(dayAfterDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -361,9 +385,9 @@ export class LeaveCalendarComponent implements OnInit {
         this.viewDate = subDays(this.viewDate, 0);
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate()+1);
+        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
         event.start = startOfDay(dayAfterDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -401,7 +425,7 @@ export class LeaveCalendarComponent implements OnInit {
 
       if (leavesCount == 1 && diffDays < 7) {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate()-1);
+        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
         event.end = endOfDay(dayBeforeDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -410,9 +434,9 @@ export class LeaveCalendarComponent implements OnInit {
         this.viewDate = subDays(this.viewDate, 0);
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate()-1);
+        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
         event.end = endOfDay(dayBeforeDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -502,7 +526,7 @@ export class LeaveCalendarComponent implements OnInit {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
         return;
       }

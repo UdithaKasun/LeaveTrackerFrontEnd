@@ -23,6 +23,9 @@ password:any;
 
     this.loginService.attemptLogin(user)
     .subscribe((data) => {
+      console.log(data);
+      window.localStorage['userid'] = data.user.username;
+      window.localStorage['leadid'] = data.leaderid;
       this.router.navigateByUrl('/member');
     }, (err) => {
       alert("Invalid Credentials...");
