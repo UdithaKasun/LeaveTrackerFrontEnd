@@ -44,6 +44,7 @@ export class LeaveCalendarComponent implements OnInit {
   }
   showLoad = true;
 
+  initialLeaveIds = [];
   ngOnInit(): void {
     this.showLoad = true;
     this.loadEvents();
@@ -86,7 +87,7 @@ export class LeaveCalendarComponent implements OnInit {
 
   empNewLeaves = [];
   empExistingLeaves = [];
-
+  empDeleteLeaves = [];
   clickedDate: Date;
   view: string = 'month';
   title = 'app';
@@ -133,6 +134,7 @@ export class LeaveCalendarComponent implements OnInit {
   
               if (leave.leave_status == "PENDING") {
                 this.events.push(pendingEvent);
+                this.initialLeaveIds.push(pendingEvent.leave_id);
               }
               else if (leave.leave_status == "APPROVED") {
                 this.events.push(approvedEvent);
@@ -180,25 +182,30 @@ export class LeaveCalendarComponent implements OnInit {
     this.empNewLeaves = [];
     this.empExistingLeaves = [];
     this.events.forEach(leave => {
-      if (leave.title != "Leave Approved") {
-        var leaveDetails = {
-          user_id: "U001",
-          leave_from_date: new Date(leave.start).toISOString(),
-          leave_to_date: new Date(leave.end).toISOString(),
-          leave_count: this.calculateLeaveLength(leave.start, leave.end),
-          leave_type: "PLANNED",
-          leave_status: "PENDING",
-          leave_approver_id: "L001"
+      console.log('****************************** '+leave.leave_id);
+      if(leave.leave_id == undefined){
+        if (leave.title != "Leave Approved") {
+          var leaveDetails = {
+            user_id: window.localStorage['userid'],
+            leave_from_date: new Date(leave.start).toISOString(),
+            leave_to_date: new Date(leave.end).toISOString(),
+            leave_count: this.calculateLeaveLength(leave.start, leave.end),
+            leave_type: "PLANNED",
+            leave_status: "PENDING",
+            leave_approver_id: window.localStorage['leadid']
+          }
+  
+          if (leave.leave_id) {
+            leaveDetails['leave_id'] = leave.leave_id;
+            this.empExistingLeaves.push(leaveDetails);
+          }
+          else {
+            this.empNewLeaves.push(leaveDetails);
+          }
         }
 
-        if (leave.leave_id) {
-          leaveDetails['leave_id'] = leave.leave_id;
-          this.empExistingLeaves.push(leaveDetails);
-        }
-        else {
-          this.empNewLeaves.push(leaveDetails);
-        }
       }
+     
     })
 
     console.log("Existing Leaves");
@@ -234,6 +241,53 @@ export class LeaveCalendarComponent implements OnInit {
     });
 
     return leaveCount;
+  }
+
+  saveLeaves(){
+    this.generateLeaves();
+
+    if(this.empNewLeaves.length > 0){
+      this.leaveService.addNewLeaves(this.empNewLeaves)
+      .subscribe(data => {
+        alert("New Leaves Saved");
+      })
+    }
+
+    var deleteLeaveIds = [];
+    
+    this.initialLeaveIds.forEach(leaveId => {
+      var available = false;
+
+      this.empExistingLeaves.forEach(leave => {
+        if(leave.leave_id == leaveId){
+          available = true;
+        }
+      });
+
+      if(!available){
+        deleteLeaveIds.push(leaveId);
+      }
+    });
+
+    console.log(deleteLeaveIds);
+    if(this.empExistingLeaves.length > 0){
+
+      this.leaveService.updateLeaves(this.empExistingLeaves)
+      .subscribe(data => {
+        alert("Existing Leaves Updated");
+      })
+    }
+
+    if(deleteLeaveIds.length > 0){
+         this.leaveService.deleteLeaves(deleteLeaveIds)
+      .subscribe(data => {
+        alert("Leaves Deleted");
+      })
+    }
+
+    
+
+    
   }
 
   getDateDifference(date) {

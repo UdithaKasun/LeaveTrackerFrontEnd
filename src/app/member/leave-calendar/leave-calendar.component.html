@@ -3,7 +3,7 @@
         Loading...
     </span>
     <span>
-        Loading...
+        Fetching Leave Details...
     </span>
 </div>
 <div *ngIf="showLoad == false">
@@ -22,6 +22,6 @@
 <mwl-calendar-month-view (beforeViewRender)="beforeMonthViewRender($event)" [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays" (dayClicked)="showDate($event)">
 </mwl-calendar-month-view>
 <div class="row flex-items-xs-right">
-        <button class="btn btn-primary">Submit</button>
+        <button class="btn btn-primary" (click)="saveLeaves()">Submit</button>
 </div>
 </div>
