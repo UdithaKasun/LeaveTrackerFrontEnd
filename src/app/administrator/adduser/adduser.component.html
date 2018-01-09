@@ -27,6 +27,14 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <label for="aForm_3">Lead</label>
+                <div class="select">
+                    <select id="aForm_3" formControlName="leaderID" >
+                        <option [value]="lead" *ngFor="let lead of leads" >{{ lead }}</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <button class="btn btn-primary"
             type="submit"

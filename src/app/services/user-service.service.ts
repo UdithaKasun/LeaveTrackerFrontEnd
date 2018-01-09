@@ -40,6 +40,15 @@ export class UserService {
     );
   }
 
+  loadLeads() {
+    return this.apiService.get('/leaders')
+    .map(
+      data => {
+        return data;
+      }
+    );
+  }
+
   //Store Authorization Information
   setAuth(user: User) {
     // Save JWT sent from server in localstorage
