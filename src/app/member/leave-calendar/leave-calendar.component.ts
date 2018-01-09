@@ -332,12 +332,12 @@ export class LeaveCalendarComponent implements OnInit {
     var diffDays = this.getDateDifference(date);
 
     if (clickedObj.day.isPast && diffDays > 2 && clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Pending Approval") {
-      swal("Oops", "You cannot modify leaves applied for past dates" + diffDays, "warning");
+      swal("Oops", "You cannot modify leaves applied for past dates" , "warning");
       return;
     }
 
-    if (clickedObj.day.isPast && diffDays > 2) {
-      swal("Oops", "You cannot place leaves for past dates" + diffDays, "warning");
+    if (clickedObj.day.isPast && diffDays > 1) {
+      swal("Oops", "You cannot place leaves for past dates" , "warning");
       return;
     }
 
