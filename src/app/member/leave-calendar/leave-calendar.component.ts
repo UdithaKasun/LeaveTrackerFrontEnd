@@ -39,7 +39,7 @@ const colors: any = {
 })
 export class LeaveCalendarComponent implements OnInit {
 
-  constructor(private leaveService: LeaveServiceService,private cdRef:ChangeDetectorRef) {
+  constructor(private leaveService: LeaveServiceService, private cdRef: ChangeDetectorRef) {
 
   }
   showLoad = true;
@@ -100,13 +100,13 @@ export class LeaveCalendarComponent implements OnInit {
     this.leaveService.getLeavesByUserId()
       .subscribe(data => {
         console.log(data);
-        this.leaves = [];        
+        this.leaves = [];
         this.leaves = data.leaves;
 
-        if(this.leaves.length > 0){
+        if (this.leaves.length > 0) {
           this.leaves.forEach(leave => {
             if (leave.leave_type == "PLANNED") {
-  
+
               var pendingEvent = {
                 title: 'Pending Approval',
                 leave_id: leave.leave_id,
@@ -119,7 +119,7 @@ export class LeaveCalendarComponent implements OnInit {
                   afterEnd: false
                 }
               };
-  
+
               var approvedEvent = {
                 title: 'Leave Approved',
                 start: startOfDay(new Date(leave.leave_from_date)),
@@ -131,7 +131,7 @@ export class LeaveCalendarComponent implements OnInit {
                   afterEnd: false
                 }
               };
-  
+
               if (leave.leave_status == "PENDING") {
                 this.events.push(pendingEvent);
                 this.initialLeaveIds.push(pendingEvent.leave_id);
@@ -147,7 +147,7 @@ export class LeaveCalendarComponent implements OnInit {
         this.showLoad = false;
         this.cdRef.detectChanges();
       })
-      console.log(this.showLoad);
+    console.log(this.showLoad);
   }
 
   calculateLeaveLength(startDate, endDate) {
@@ -182,30 +182,46 @@ export class LeaveCalendarComponent implements OnInit {
     this.empNewLeaves = [];
     this.empExistingLeaves = [];
     this.events.forEach(leave => {
-      console.log('****************************** '+leave.leave_id);
-      if(leave.leave_id == undefined){
-        if (leave.title != "Leave Approved") {
-          var leaveDetails = {
+      var leaveDetails;
+
+      if (leave.title != "Leave Approved") {
+        if (leave.leave_id == undefined) {
+          leaveDetails = {
             user_id: window.localStorage['userid'],
             leave_from_date: new Date(leave.start).toISOString(),
             leave_to_date: new Date(leave.end).toISOString(),
             leave_count: this.calculateLeaveLength(leave.start, leave.end),
             leave_type: "PLANNED",
             leave_status: "PENDING",
-            leave_approver_id: window.localStorage['leadid']
+            leave_approver_id: window.localStorage['leadid'],
+            leave_id: ""
           }
-  
-          if (leave.leave_id) {
-            leaveDetails['leave_id'] = leave.leave_id;
-            this.empExistingLeaves.push(leaveDetails);
+        } else {
+          leaveDetails = {
+            user_id: window.localStorage['userid'],
+            leave_from_date: new Date(leave.start).toISOString(),
+            leave_to_date: new Date(leave.end).toISOString(),
+            leave_count: this.calculateLeaveLength(leave.start, leave.end),
+            leave_type: "PLANNED",
+            leave_status: "PENDING",
+            leave_approver_id: window.localStorage['leadid'],
+            leave_id: leave.leave_id
           }
-          else {
-            this.empNewLeaves.push(leaveDetails);
-          }
+
+
         }
 
+        if (leave.leave_id) {
+          leaveDetails['leave_id'] = leave.leave_id;
+          this.empExistingLeaves.push(leaveDetails);
+        }
+        else {
+          this.empNewLeaves.push(leaveDetails);
+        }
       }
-     
+
+
+
     })
 
     console.log("Existing Leaves");
@@ -243,51 +259,55 @@ export class LeaveCalendarComponent implements OnInit {
     return leaveCount;
   }
 
-  saveLeaves(){
+  saveLeaves() {
     this.generateLeaves();
 
-    if(this.empNewLeaves.length > 0){
+    if (this.empNewLeaves.length > 0) {
       this.leaveService.addNewLeaves(this.empNewLeaves)
-      .subscribe(data => {
-        alert("New Leaves Saved");
-      })
+        .subscribe(data => {
+          alert("New Leaves Saved");
+        })
     }
 
     var deleteLeaveIds = [];
-    
+    console.log('Initial Leaves *********************************');
+    console.log(this.initialLeaveIds);
+    console.log('Exisiting Leaves *********************************');
+    console.log(this.empExistingLeaves);
+
     this.initialLeaveIds.forEach(leaveId => {
       var available = false;
 
       this.empExistingLeaves.forEach(leave => {
-        if(leave.leave_id == leaveId){
+        if (leave.leave_id == leaveId) {
           available = true;
         }
       });
 
-      if(!available){
+      if (!available) {
         deleteLeaveIds.push(leaveId);
       }
     });
 
-    console.log(deleteLeaveIds);
-    if(this.empExistingLeaves.length > 0){
+    // console.log(deleteLeaveIds);
+    if (this.empExistingLeaves.length > 0) {
 
       this.leaveService.updateLeaves(this.empExistingLeaves)
-      .subscribe(data => {
-        alert("Existing Leaves Updated");
-      })
+        .subscribe(data => {
+          alert("Existing Leaves Updated");
+        })
     }
 
-    if(deleteLeaveIds.length > 0){
-         this.leaveService.deleteLeaves(deleteLeaveIds)
-      .subscribe(data => {
-        alert("Leaves Deleted");
-      })
+    if (deleteLeaveIds.length > 0) {
+      this.leaveService.deleteLeaves(deleteLeaveIds)
+        .subscribe(data => {
+          alert("Leaves Deleted");
+        })
     }
 
-    
 
-    
+
+
   }
 
   getDateDifference(date) {
