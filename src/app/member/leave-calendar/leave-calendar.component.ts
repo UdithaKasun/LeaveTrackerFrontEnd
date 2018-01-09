@@ -265,7 +265,7 @@ export class LeaveCalendarComponent implements OnInit {
     if (this.empNewLeaves.length > 0) {
       this.leaveService.addNewLeaves(this.empNewLeaves)
         .subscribe(data => {
-          alert("New Leaves Saved");
+          
         })
     }
 
@@ -294,16 +294,18 @@ export class LeaveCalendarComponent implements OnInit {
 
       this.leaveService.updateLeaves(this.empExistingLeaves)
         .subscribe(data => {
-          alert("Existing Leaves Updated");
+          
         })
     }
 
     if (deleteLeaveIds.length > 0) {
       this.leaveService.deleteLeaves(deleteLeaveIds)
         .subscribe(data => {
-          alert("Leaves Deleted");
+          
         })
     }
+
+    swal("Great","Leaves Saved Successfully !","info");
 
 
 

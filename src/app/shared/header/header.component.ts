@@ -10,8 +10,10 @@ import { UserService } from '../../services/user-service.service';
 export class HeaderComponent implements OnInit {
 
   constructor(public router:Router, private userService : UserService) { }
+  userName = "";
 
   ngOnInit() {
+    this.userName = window.localStorage['userid'];
   }
 
   logout(){

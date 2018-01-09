@@ -1,9 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { ClarityModule } from "clarity-angular";
 import { CalendarModule } from 'angular-calendar';
 import { routing } from '../app/Router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule ,ReactiveFormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './shared/header/header.component';
@@ -19,6 +20,9 @@ import { AuthGuardService as AuthGuard } from './services/auth-guard-service.ser
 import { HttpModule } from '@angular/http';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { LeaveServiceService } from './services/leave-service.service';
+import { AdministratorComponent } from './administrator/administrator.component';
+import { ContentviewComponent } from './administrator/contentview/contentview.component';
+import { AdduserComponent } from './administrator/adduser/adduser.component';
 
 
 
@@ -31,15 +35,20 @@ import { LeaveServiceService } from './services/leave-service.service';
     LeaveCalendarComponent,
     LeaveHistoryComponent,
     MemberComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    AdministratorComponent,
+    ContentviewComponent,
+    AdduserComponent
   ],
   imports: [
     routing,
     BrowserModule,
+    BrowserAnimationsModule,
     HttpModule,
     ClarityModule.forRoot(),
     CalendarModule.forRoot(),
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [UserService,ApiService,JwtService,AuthGuard,LeaveServiceService],
   bootstrap: [AppComponent]

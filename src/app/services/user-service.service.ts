@@ -31,6 +31,15 @@ export class UserService {
     );
   }
 
+  registerUser(userdetails) {
+    return this.apiService.post('/users', {user: userdetails})
+    .map(
+      data => {
+        return data;
+      }
+    );
+  }
+
   //Store Authorization Information
   setAuth(user: User) {
     // Save JWT sent from server in localstorage

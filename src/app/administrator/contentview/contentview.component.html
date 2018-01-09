@@ -1,0 +1,48 @@
+<div class="main-container">
+    <div class="content-container">
+        <div class="content-area">
+            <router-outlet></router-outlet>
+        </div>
+        <clr-vertical-nav>
+            <clr-vertical-nav-group
+            routerLinkActive="active">
+        <clr-icon shape="user" clrVerticalNavIcon></clr-icon>
+        User Management
+        <clr-vertical-nav-group-children>
+            <a clrVerticalNavLink
+               routerLink="./adduser"
+               routerLinkActive="active">
+                Add User
+            </a>
+            <a clrVerticalNavLink
+               routerLink="./resetuser"
+               routerLinkActive="active">
+                Edit User
+            </a>
+        </clr-vertical-nav-group-children>
+    </clr-vertical-nav-group>
+    <clr-vertical-nav-group
+    routerLinkActive="active">
+<clr-icon shape="user" clrVerticalNavIcon></clr-icon>
+Team Management
+<clr-vertical-nav-group-children>
+    <a clrVerticalNavLink
+       routerLink="./adduser"
+       routerLinkActive="active">
+        Create Team
+    </a>
+    <a clrVerticalNavLink
+       routerLink="./resetuser"
+       routerLinkActive="active">
+        Edit Team
+    </a>
+    <a clrVerticalNavLink
+       routerLink="./resetuser"
+       routerLinkActive="active">
+        View Team
+    </a>
+</clr-vertical-nav-group-children>
+</clr-vertical-nav-group>
+        </clr-vertical-nav>
+    </div>
+  </div>

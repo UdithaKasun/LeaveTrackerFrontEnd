@@ -6,6 +6,8 @@ import { LeaveHistoryComponent } from '../app/member/leave-history/leave-history
 import { MemberComponent } from '../app/member/member.component';
 import { AuthGuardService as AuthGuard } from './services/auth-guard-service.service';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { AdministratorComponent } from './administrator/administrator.component';
+import { AdduserComponent } from './administrator/adduser/adduser.component';
 
 export const routes: Routes = [  
       {
@@ -25,6 +27,14 @@ export const routes: Routes = [
             { path: '', redirectTo: 'leaveCalendar', pathMatch: 'full' },
             { path: 'leaveHistory', component: LeaveHistoryComponent },
             { path: 'leaveCalendar', component: LeaveCalendarComponent }
+          ]
+      },
+      {
+        path: 'admin', 
+        component : AdministratorComponent,
+        children: [
+            { path: '', redirectTo: 'adduser', pathMatch: 'full' },
+            { path: 'adduser', component: AdduserComponent }
           ]
       },
       {

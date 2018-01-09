@@ -1,0 +1,35 @@
+<form class="form" [formGroup]="employeeInfoForm" (ngSubmit)="onSubmit()" [hidden]="submitted">
+    <section class="form-block">
+        <label>Add New User</label>
+        <div>
+            <div class="form-group">
+                <label for="userEmail">User Email</label>
+                <label for="userEmail"
+                    aria-haspopup="true"
+                    role="tooltip"
+                    class="tooltip tooltip-validation tooltip-sm"
+                    [class.invalid]="employeeInfoForm.get('userEmail').invalid
+                        && (employeeInfoForm.get('userEmail').dirty ||
+                        employeeInfoForm.get('userEmail').touched)">
+                    <input id="userEmail" type="text"
+                        formControlName="userEmail">
+                    <span class="tooltip-content">
+                        User Email is Required
+                    </span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="aForm_3">User Role</label>
+                <div class="select">
+                    <select id="aForm_3" formControlName="empType" >
+                        <option>Leader</option>
+                        <option>Normal</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary"
+            type="submit"
+            [disabled]="employeeInfoForm.invalid">Add</button>
+    </section>
+</form>
