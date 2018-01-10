@@ -7,10 +7,11 @@ import { Router } from "@angular/router";
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit {
-
+  UserName:any;
   constructor(public router:Router) { }
 
   ngOnInit() {
+    this.UserName="Example Username";
   }
   logout(){
     this.router.navigateByUrl('/login');

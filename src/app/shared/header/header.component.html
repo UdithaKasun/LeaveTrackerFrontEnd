@@ -1,16 +1,13 @@
 <header class="header-6">
   <div class="branding">
       <a class="nav-link">
-          <clr-icon shape="organization"></clr-icon>
+          <clr-icon shape="event"></clr-icon>
           <span class="title">Leave Tracker</span>
       </a>
   </div>
   <div class="header-actions">
       <clr-dropdown> 
           <button class="nav-text" clrDropdownTrigger>
-                <div *ngIf="UserName == ''"> 
-                    Sign In
-                </div>
                 <div *ngIf="UserName != ''">
                     {{UserName}}
                 </div>

@@ -1,0 +1,42 @@
+<div class="jumbotron">
+    <div class="cardaa" align="right">
+        <form class="example-form">
+            <mat-form-field class="example-full-width">
+                <input matInput placeholder="Search Employee" aria-label="Search Employee" [matAutocomplete]="auto" [formControl]="stateCtrl">
+                <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option *ngFor="let state of filteredStates | async" [value]="state.name" (click)="selectMember()">
+                        <img style="vertical-align:middle;" aria-hidden src="{{state.flag}}" height="25" />
+                        <span>{{ state.name }}</span> |
+                        <small>Population: {{state.population}}</small>
+                    </mat-option>
+                </mat-autocomplete>
+            </mat-form-field>
+        </form>
+    </div>
+    <div *ngIf="showCalendar">
+    <div class="row">
+        <div class="col-xs-3">
+            <span>
+                <button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('back')" class="btn">Previous</button>
+            </span>
+        </div>
+        <div class="col-xs-6" align="center">
+            <span class="center">{{ viewDate | calendarDate:(view + 'ViewTitle'):'en' }}</span>
+        </div>
+        <div class="col-xs-3">
+            <span>
+                <button mwlCalendarNextView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('forward')" class="btn ;  next">Next</button>
+            </span>
+        </div>
+    </div>
+    <br>
+    <mwl-calendar-month-view [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays" (dayClicked)="showDate($event)"
+        (beforeViewRender)="beforeMonthViewRender($event)">
+    </mwl-calendar-month-view>
+    <br>
+    <div class="row flex-items-xs-right">
+
+        <button class="btn btn-primary">Submit</button>
+    </div>
+<div>
+</div>

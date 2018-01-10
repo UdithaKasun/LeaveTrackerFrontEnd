@@ -1,0 +1,30 @@
+<div class="main-container">
+    <app-header></app-header>
+  <div class="content-container">
+
+    
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+    <clr-vertical-nav>
+      <a clrVerticalNavLink routerLink="./leaveCalendar" routerLinkActive="active">
+        <clr-icon clrVerticalNavIcon shape="home"></clr-icon>
+        Leave Calendar
+      </a>
+      <a clrVerticalNavLink routerLink="./leaveHistory" routerLinkActive="active">
+        <clr-icon clrVerticalNavIcon shape="users"></clr-icon>
+        Leave History
+      </a>
+      <clr-vertical-nav-group routerLinkActive="active">
+        <a routerLink="./normal" hidden aria-hidden="true"></a>
+        <clr-icon shape="bars" clrVerticalNavIcon></clr-icon>
+        Manage Leaves
+        <clr-vertical-nav-group-children *clrIfExpanded="true">
+          <a clrVerticalNavLink routerLink="./pendingApproval" routerLinkActive="active">Pending Approvals</a>
+          <a clrVerticalNavLink routerLink="./unplannedLeaves" routerLinkActive="active">Mark Unplaned Leaves</a>
+          <a clrVerticalNavLink routerLink="./memberLeaveHistory" routerLinkActive="active">View History</a>
+        </clr-vertical-nav-group-children>
+      </clr-vertical-nav-group>
+    </clr-vertical-nav>
+  </div>
+</div>

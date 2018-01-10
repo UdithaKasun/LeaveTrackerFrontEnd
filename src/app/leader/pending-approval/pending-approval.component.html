@@ -1,0 +1,22 @@
+
+  <h3>Pending Approvals</h3>
+  <clr-datagrid>
+    <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
+    <clr-dg-column [clrDgField]="'from'">From</clr-dg-column>
+    <clr-dg-column [clrDgField]="'to'">To</clr-dg-column>
+    <clr-dg-column [clrDgField]="'count'">Leave Count</clr-dg-column>
+    <clr-dg-column>Status</clr-dg-column>
+
+    <clr-dg-row *clrDgItems="let row of leaves">
+      <clr-dg-cell class="centertd">{{row.name}}</clr-dg-cell>
+      <clr-dg-cell class="centertd">{{row.from}}</clr-dg-cell>
+      <clr-dg-cell class="centertd">{{row.to}}</clr-dg-cell>
+      <clr-dg-cell class="centertd">{{row.count}}</clr-dg-cell>
+      <clr-dg-cell>
+        <button class="btn btn-success btn-sm" (click)="approve()">Accept</button>
+        <button class="btn btn-danger btn-sm" (click)="reject()"> Reject </button>
+      </clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>{{leaves.length}} Pending Approvals</clr-dg-footer>
+  </clr-datagrid>

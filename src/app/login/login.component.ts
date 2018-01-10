@@ -16,6 +16,8 @@ password:any;
   login(){
     if(this.password&&this.username==123){
       this.router.navigateByUrl('/member');
+    }else if(this.password&&this.username==12){
+      this.router.navigateByUrl('/leader');
     }
    
   }

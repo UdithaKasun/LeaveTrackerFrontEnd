@@ -30,3 +30,21 @@ h2 {
 .pending-abc {
     background-color: pink !important;
   }
+
+.cardcustom{
+    padding: 50px;
+}
+
+.example-form {
+    min-width: 150px;
+    max-width: 500px;
+    width: 100%;
+  }
+  
+  .example-full-width {
+    width: 100%;
+  }
+
+  .cardaa{
+    margin-bottom: 30px;
+  }
