@@ -1,6 +1,6 @@
 <form class="form" [formGroup]="employeeInfoForm" (ngSubmit)="onSubmit()" [hidden]="submitted">
     <section class="form-block">
-        <label><clr-icon shape="user" class="has-badge"></clr-icon> Add New User</label>
+        <label><clr-icon shape="user" class="has-badge"></clr-icon> Edit User</label>
         <hr>
         <div>
             <div class="form-group">
@@ -19,6 +19,8 @@
                     </span>
                 </label>
             </div>
+            <button class="btn btn-primary"
+            type="button" (click)="resetForm()">Search</button>
             <div class="form-group">
                 <label for="userRole">User Role</label>
                 <div class="select">
@@ -38,7 +40,7 @@
         </div>
         <button class="btn btn-primary"
             type="submit"
-            [disabled]="employeeInfoForm.invalid">Add</button>
+            [disabled]="employeeInfoForm.invalid">Update User</button>
         <button class="btn btn-danger"
             type="button" (click)="resetForm()">Reset</button>
     </section>

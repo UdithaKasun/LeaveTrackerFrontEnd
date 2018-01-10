@@ -23,6 +23,7 @@ import { LeaveServiceService } from './services/leave-service.service';
 import { AdministratorComponent } from './administrator/administrator.component';
 import { ContentviewComponent } from './administrator/contentview/contentview.component';
 import { AdduserComponent } from './administrator/adduser/adduser.component';
+import { EdituserComponent } from './administrator/edituser/edituser.component';
 
 
 
@@ -38,7 +39,8 @@ import { AdduserComponent } from './administrator/adduser/adduser.component';
     PageNotFoundComponent,
     AdministratorComponent,
     ContentviewComponent,
-    AdduserComponent
+    AdduserComponent,
+    EdituserComponent
   ],
   imports: [
     routing,

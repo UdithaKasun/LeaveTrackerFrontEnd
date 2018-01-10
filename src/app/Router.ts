@@ -8,6 +8,7 @@ import { AuthGuardService as AuthGuard } from './services/auth-guard-service.ser
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { AdministratorComponent } from './administrator/administrator.component';
 import { AdduserComponent } from './administrator/adduser/adduser.component';
+import { EdituserComponent } from './administrator/edituser/edituser.component';
 
 export const routes: Routes = [  
       {
@@ -34,7 +35,8 @@ export const routes: Routes = [
         component : AdministratorComponent,
         children: [
             { path: '', redirectTo: 'adduser', pathMatch: 'full' },
-            { path: 'adduser', component: AdduserComponent }
+            { path: 'adduser', component: AdduserComponent },
+            { path: 'edituser', component: EdituserComponent }
           ]
       },
       {

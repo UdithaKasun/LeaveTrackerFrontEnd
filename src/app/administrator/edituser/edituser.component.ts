@@ -4,11 +4,11 @@ import { UserService } from '../../services/user-service.service';
 import swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-adduser',
-  templateUrl: './adduser.component.html',
-  styleUrls: ['./adduser.component.css']
+  selector: 'app-edituser',
+  templateUrl: './edituser.component.html',
+  styleUrls: ['./edituser.component.css']
 })
-export class AdduserComponent {
+export class EdituserComponent  {
 
   leads = [];
   userRoles = ["Normal","Leader","Administrator"];
@@ -55,5 +55,4 @@ export class AdduserComponent {
   resetForm(){
     this.employeeInfoForm.get('userEmail').setValue("");
   }
-
 }
