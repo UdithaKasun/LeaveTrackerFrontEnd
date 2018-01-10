@@ -1,9 +1,8 @@
 import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import {FormControl} from '@angular/forms';
-import {startWith} from 'rxjs/operators/startWith';
-import {map} from 'rxjs/operators/map';
+import { FormControl } from '@angular/forms';
+import { startWith } from 'rxjs/operators/startWith';
+import { map } from 'rxjs/operators/map';
 import swal from 'sweetalert2';
-
 import {
   startOfDay,
   endOfDay,
@@ -16,6 +15,8 @@ import {
 } from 'date-fns';
 import { Observable } from 'rxjs/Observable';
 import { CalendarMonthViewDay } from "angular-calendar";
+import { LeaderServiceService } from '../../services/leader-service.service'
+import { Response } from '@angular/http/src/static_response';
 
 const colors: any = {
   red: {
@@ -31,14 +32,14 @@ const colors: any = {
     secondary: '#FDF1BA'
   }
   ,
-  green : {
+  green: {
     primary: '#48960C',
     secondary: '#FDF1BA'
   }
 };
 
 export class State {
-  constructor(public name: string, public population: string, public flag: string) { }
+  constructor(public name: string) { }
 }
 
 @Component({
@@ -47,52 +48,36 @@ export class State {
   styleUrls: ['./unplanned-leaves.component.css']
 })
 export class UnplannedLeavesComponent implements OnInit {
-  showCalendar:boolean;
+  showCalendar: boolean;
 
   ngOnInit(): void {
     this.loadEvents();
-    this.showCalendar=false;
+    this.showCalendar = false;
   }
-  selectMember(){
-    this.showCalendar=true;
+  selectMember() {
+    this.showCalendar = true;
   }
 
   stateCtrl: FormControl;
   filteredStates: Observable<any[]>;
 
-  states: State[] = [
-    {
-      name: 'Arkansas',
-      population: '2.978M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_Arkansas.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/9/9d/Flag_of_Arkansas.svg'
-    },
-    {
-      name: 'California',
-      population: '39.14M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_California.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Flag_of_California.svg'
-    },
-    {
-      name: 'Florida',
-      population: '20.27M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_Florida.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Flag_of_Florida.svg'
-    },
-    {
-      name: 'Texas',
-      population: '27.47M',
-      // https://commons.wikimedia.org/wiki/File:Flag_of_Texas.svg
-      flag: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Flag_of_Texas.svg'
-    }
-  ];
-  constructor() {
+  states: State[] = [];
+  constructor(public leaderService: LeaderServiceService) {
     this.stateCtrl = new FormControl();
-    this.filteredStates = this.stateCtrl.valueChanges
-      .pipe(
+    leaderService.getleaderMembers().subscribe(Response => {
+      console.log(Response);
+      for (var i = 0; i < Response.length; i++) {
+        this.states.push({ name: Response[i].username })
+      }
+      console.log(this.states);
+      
+      this.filteredStates = this.stateCtrl.valueChanges
+        .pipe(
         startWith(''),
         map(state => state ? this.filterStates(state) : this.states.slice())
-      );
+        );
+    })
+
   }
 
   filterStates(name: string) {
@@ -100,7 +85,7 @@ export class UnplannedLeavesComponent implements OnInit {
       state.name.toLowerCase().indexOf(name.toLowerCase()) === 0);
   }
 
-  
+
 
   leaves = [{
     user_id: "U001",
@@ -140,7 +125,7 @@ export class UnplannedLeavesComponent implements OnInit {
 
         var pendingEvent = {
           title: 'Pending Approval',
-          leave_id : leave.leave_id,
+          leave_id: leave.leave_id,
           start: startOfDay(new Date(leave.leave_from_date)),
           end: endOfDay(new Date(leave.leave_to_date)),
           color: colors.yellow,
@@ -211,13 +196,13 @@ export class UnplannedLeavesComponent implements OnInit {
           user_id: "U001",
           leave_from_date: new Date(leave.start).toISOString(),
           leave_to_date: new Date(leave.end).toISOString(),
-          leave_count : this.calculateLeaveLength(leave.start,leave.end),
+          leave_count: this.calculateLeaveLength(leave.start, leave.end),
           leave_type: "PLANNED",
           leave_status: "PENDING",
           leave_approver_id: "L001"
         }
 
-        if(leave.leave_id){
+        if (leave.leave_id) {
           leaveDetails['leave_id'] = leave.leave_id;
           this.empExistingLeaves.push(leaveDetails);
         }
@@ -280,7 +265,7 @@ export class UnplannedLeavesComponent implements OnInit {
       swal("Oops", "You cannot place leaves for today", "warning");
       return;
     }
-    
+
     var diffDays = this.getDateDifference(date);
 
     if (clickedObj.day.isPast && diffDays > 2 && clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Pending Approval") {
@@ -364,7 +349,7 @@ export class UnplannedLeavesComponent implements OnInit {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
         return;
       }
@@ -402,7 +387,7 @@ export class UnplannedLeavesComponent implements OnInit {
 
       if (leavesCount == 1 && diffDays < 7) {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate()+1);
+        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
         event.start = startOfDay(dayAfterDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -411,9 +396,9 @@ export class UnplannedLeavesComponent implements OnInit {
         this.viewDate = subDays(this.viewDate, 0);
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate()+1);
+        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
         event.start = startOfDay(dayAfterDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -451,7 +436,7 @@ export class UnplannedLeavesComponent implements OnInit {
 
       if (leavesCount == 1 && diffDays < 7) {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate()-1);
+        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
         event.end = endOfDay(dayBeforeDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -460,9 +445,9 @@ export class UnplannedLeavesComponent implements OnInit {
         this.viewDate = subDays(this.viewDate, 0);
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate()-1);
+        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
         event.end = endOfDay(dayBeforeDate);
         if (index > -1) {
           this.events.splice(index, 1);
@@ -552,7 +537,7 @@ export class UnplannedLeavesComponent implements OnInit {
         swal("Oops", "Leaves can only be planned prior to a week", "warning");
         return;
       }
-      else if(leavesCount == 2 && diffDays < 14){
+      else if (leavesCount == 2 && diffDays < 14) {
         swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
         return;
       }

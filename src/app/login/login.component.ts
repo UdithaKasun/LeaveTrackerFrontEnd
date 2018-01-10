@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from "@angular/router";
 import { UserService } from '../services/user-service.service';
 import { User } from '../services/models/User';
+import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -26,9 +27,15 @@ password:any;
       console.log(data);
       window.localStorage['userid'] = data.user.username;
       window.localStorage['leadid'] = data.leaderid;
+      if(data.role == "Leader"){
+        this.router.navigateByUrl('/leader');
+      }else if(data.role == "Member"){
       this.router.navigateByUrl('/member');
+      }else if(data.role == "Admin"){
+        this.router.navigateByUrl('/admin');
+      }
     }, (err) => {
-      alert("Invalid Credentials...");
+      swal("Oops", "Invalid Credentials...", "warning");
     });   
   }
 }

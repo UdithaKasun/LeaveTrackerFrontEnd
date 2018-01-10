@@ -9,9 +9,9 @@ import swal from 'sweetalert2';
   styleUrls: ['./adduser.component.css']
 })
 export class AdduserComponent {
-
+  showLoad:boolean = false;
   leads = [];
-  userRoles = ["Normal","Leader","Administrator"];
+  userRoles = ["Member","Leader","Administrator"];
   constructor(private userService : UserService){
     this.userService.loadLeads()
     .subscribe(leads => {
@@ -27,6 +27,7 @@ export class AdduserComponent {
 
   submitted = false;
   onSubmit() {
+    this.showLoad=true;
     var user = { 
       username : this.employeeInfoForm.get('userEmail').value,
       userrole : this.employeeInfoForm.get('empType').value,
@@ -36,12 +37,15 @@ export class AdduserComponent {
     this.userService.registerUser(user)
     .subscribe(response => {
       this.employeeInfoForm.reset();
+      this.showLoad=false;
       swal("Great","User Added Successfully","info");
     },err=>{
       if(err.errors.username != undefined && err.errors.username=="is already taken."){
+        this.showLoad=false;
         swal("Oops","User Already Exist","error");
       }
-      else {
+      else {        
+        this.showLoad=false;
         swal("Oops","User Registration Failed","error");
       }
     })    

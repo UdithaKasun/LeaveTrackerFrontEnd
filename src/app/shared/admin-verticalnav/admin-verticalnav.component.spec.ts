@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ContentviewComponent } from './contentview.component';
+import { AdminVerticalnavComponent } from './admin-verticalnav.component';
 
-describe('ContentviewComponent', () => {
-  let component: ContentviewComponent;
-  let fixture: ComponentFixture<ContentviewComponent>;
+describe('AdminVerticalnavComponent', () => {
+  let component: AdminVerticalnavComponent;
+  let fixture: ComponentFixture<AdminVerticalnavComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ContentviewComponent ]
+      declarations: [ AdminVerticalnavComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ContentviewComponent);
+    fixture = TestBed.createComponent(AdminVerticalnavComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

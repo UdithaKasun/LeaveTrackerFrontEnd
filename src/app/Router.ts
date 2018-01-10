@@ -27,8 +27,7 @@ export const routes: Routes = [
       {
         path: 'member', 
         component : MemberComponent,
-        canActivate: [AuthGuard],
-
+        canActivate: [AuthGuard], 
         children: [
             { path: '', redirectTo: 'leaveCalendar', pathMatch: 'full' },
             { path: 'leaveHistory', component: LeaveHistoryComponent },
@@ -38,6 +37,7 @@ export const routes: Routes = [
       {
         path: 'leader', 
         component : LeaderComponent,
+        canActivate: [AuthGuard],
         children: [
           { path: '', redirectTo: 'leaveCalendar', pathMatch: 'full' },
           { path: 'leaveHistory', component: LeaveHistoryComponent },
@@ -50,6 +50,7 @@ export const routes: Routes = [
       {
         path: 'admin', 
         component : AdministratorComponent,
+        canActivate: [AuthGuard],
         children: [
             { path: '', redirectTo: 'adduser', pathMatch: 'full' },
             { path: 'adduser', component: AdduserComponent },

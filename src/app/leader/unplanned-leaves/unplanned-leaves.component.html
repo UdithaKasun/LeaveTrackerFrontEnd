@@ -5,9 +5,7 @@
                 <input matInput placeholder="Search Employee" aria-label="Search Employee" [matAutocomplete]="auto" [formControl]="stateCtrl">
                 <mat-autocomplete #auto="matAutocomplete">
                     <mat-option *ngFor="let state of filteredStates | async" [value]="state.name" (click)="selectMember()">
-                        <img style="vertical-align:middle;" aria-hidden src="{{state.flag}}" height="25" />
-                        <span>{{ state.name }}</span> |
-                        <small>Population: {{state.population}}</small>
+                        <span>{{ state.name }}</span>
                     </mat-option>
                 </mat-autocomplete>
             </mat-form-field>

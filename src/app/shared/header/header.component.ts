@@ -14,9 +14,11 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {
     this.userName = window.localStorage['userid'];
+    console.log(this.userName);
   }
 
   logout(){
+    window.location.reload();
     this.userService.destroyAuth();
     this.router.navigateByUrl('/login');
   }

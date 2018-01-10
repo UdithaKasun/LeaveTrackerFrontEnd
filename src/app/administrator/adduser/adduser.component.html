@@ -1,4 +1,9 @@
-<form class="form" [formGroup]="employeeInfoForm" (ngSubmit)="onSubmit()" [hidden]="submitted">
+<div *ngIf="showLoad  == true" class="content">
+        <span class="spinner spinner-lg">
+                Loading...
+            </span> 
+    </div>
+<form class="form" [formGroup]="employeeInfoForm" (ngSubmit)="onSubmit()" [hidden]="submitted" *ngIf="showLoad  != true">
     <section class="form-block">
         <label><clr-icon shape="user" class="has-badge"></clr-icon> Add New User</label>
         <hr>

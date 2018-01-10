@@ -6,25 +6,31 @@
         Fetching Leave Details...
     </span>
 </div>
-<div *ngIf="showLoad == false">
-<div class="row" >
-    <div class="col-xs-3">
-        <span><button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('back')" class="btn">Previous</button></span>
+<div >
+    <div class="row">
+        <div class="col-xs-3">
+            <span>
+                <button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('back')" class="btn">Previous</button>
+            </span>
+        </div>
+        <div class="col-xs-6" align="center">
+            <span class="center">{{ viewDate | calendarDate:(view + 'ViewTitle'):'en' }}</span>
+        </div>
+        <div class="col-xs-3">
+            <span>
+                <button mwlCalendarNextView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('forward')" class="btn ;  next">Next</button>
+            </span>
+        </div>
     </div>
-    <div class="col-xs-6" align="center">
-        <span class="center">{{ viewDate | calendarDate:(view + 'ViewTitle'):'en' }}</span>
-    </div>
-    <div class="col-xs-3">
-        <span><button  mwlCalendarNextView [view]="view"  [(viewDate)]="viewDate" (viewDateChange)="skipWeekends('forward')" class="btn ;  next">Next</button></span>
-    </div>
-</div>
 </div>
 <br>
-<mwl-calendar-month-view  [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays" (dayClicked)="showDate($event)" (beforeViewRender)="beforeMonthViewRender($event)">
+<mwl-calendar-month-view [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays" (dayClicked)="showDate($event)"
+    (beforeViewRender)="beforeMonthViewRender($event)">
 
-<mwl-calendar-month-view (beforeViewRender)="beforeMonthViewRender($event)" [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays" (dayClicked)="showDate($event)">
-</mwl-calendar-month-view>
-<br>
-<div class="row flex-items-xs-right">
+    <mwl-calendar-month-view (beforeViewRender)="beforeMonthViewRender($event)" [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays"
+        (dayClicked)="showDate($event)">
+    </mwl-calendar-month-view>
+    <br>
+    <div class="row flex-items-xs-right">
         <button class="btn btn-primary" (click)="saveLeaves()">Submit</button>
-</div>
+    </div>

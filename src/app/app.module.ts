@@ -6,6 +6,7 @@ import { CalendarModule } from 'angular-calendar';
 import { routing } from '../app/Router';
 import { FormsModule ,ReactiveFormsModule } from '@angular/forms';
 
+import { MaterialModule } from '../app/material';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './shared/header/header.component';
 import { VerticalnavComponent } from './shared/verticalnav/verticalnav.component';
@@ -26,9 +27,10 @@ import { HttpModule } from '@angular/http';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { LeaveServiceService } from './services/leave-service.service';
 import { AdministratorComponent } from './administrator/administrator.component';
-import { ContentviewComponent } from './administrator/contentview/contentview.component';
 import { AdduserComponent } from './administrator/adduser/adduser.component';
 import { EdituserComponent } from './administrator/edituser/edituser.component';
+import { AdminVerticalnavComponent } from './shared/admin-verticalnav/admin-verticalnav.component';
+import { LeaderServiceService } from '../app/services/leader-service.service';
 
 
 
@@ -48,9 +50,9 @@ import { EdituserComponent } from './administrator/edituser/edituser.component';
     MemberLeaveHistoryComponent,
     PageNotFoundComponent,
     AdministratorComponent,
-    ContentviewComponent,
     AdduserComponent,
-    EdituserComponent
+    EdituserComponent,
+    AdminVerticalnavComponent
   ],
   imports: [
     routing,
@@ -60,9 +62,10 @@ import { EdituserComponent } from './administrator/edituser/edituser.component';
     ClarityModule.forRoot(),
     CalendarModule.forRoot(),
     FormsModule,
+    MaterialModule,
     ReactiveFormsModule
   ],
-  providers: [UserService,ApiService,JwtService,AuthGuard,LeaveServiceService],
+  providers: [UserService,ApiService,JwtService,AuthGuard,LeaveServiceService,LeaderServiceService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
