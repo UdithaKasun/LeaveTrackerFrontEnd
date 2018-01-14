@@ -20,8 +20,8 @@ export class LeaveServiceService {
     });
   }
 
-  addNewLeaves(leaves) : Observable<any> {
-    return this.apiService.post('/leaves', { leaves : leaves })
+  saveLeaves(newLeaves,exLeaves,delLeaves) : Observable<any> {
+    return this.apiService.post('/leaves', { newLeaves : newLeaves ,  removeLeaves : delLeaves , existLeaves : exLeaves})
     .map(data => {
       return data;
     });

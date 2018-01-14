@@ -13,6 +13,7 @@ import {
 import { Observable } from 'rxjs/Observable';
 import { CalendarMonthViewDay } from "angular-calendar";
 import { LeaveServiceService } from '../../services/leave-service.service';
+import { BlockUI, NgBlockUI } from 'ng-block-ui';
 
 const colors: any = {
   red: {
@@ -29,7 +30,7 @@ const colors: any = {
   }
   ,
   green : {
-    primary: '#48960C',
+    primary: '#85C81A',
     secondary: '#FDF1BA'
   }
 };
@@ -44,14 +45,17 @@ const colors: any = {
 })
 export class LeaveCalendarComponent implements OnInit {
 
+  @BlockUI() blockUI: NgBlockUI;
+  
   constructor(private leaveService: LeaveServiceService, private cdRef: ChangeDetectorRef) {
-
+    
   }
   showLoad = true;
 
   initialLeaveIds = [];
   ngOnInit(): void {
     this.showLoad = true;
+    this.blockUI.start('Please Wait...');
     this.loadEvents();
   }
 
@@ -101,7 +105,7 @@ export class LeaveCalendarComponent implements OnInit {
   events = [];
 
   loadEvents() {
-
+    this.events = [];
     this.leaveService.getLeavesByUserId()
       .subscribe(data => {
         console.log(data);
@@ -117,7 +121,7 @@ export class LeaveCalendarComponent implements OnInit {
                 leave_id: leave.leave_id,
                 start: startOfDay(new Date(leave.leave_from_date)),
                 end: endOfDay(new Date(leave.leave_to_date)),
-                color: colors.yellow,
+                color: colors.green,
                 draggable: false,
                 resizable: {
                   beforeStart: false,
@@ -150,7 +154,12 @@ export class LeaveCalendarComponent implements OnInit {
         }
         console.log(this.events);
         this.showLoad = false;
+        this.viewDate = new Date();
         this.cdRef.detectChanges();
+        this.blockUI.stop();
+      },error => {
+        this.blockUI.stop();
+        swal("Error","Leaves could not be Fetched","error");
       })
     console.log(this.showLoad);
   }
@@ -218,7 +227,16 @@ export class LeaveCalendarComponent implements OnInit {
 
         if (leave.leave_id) {
           leaveDetails['leave_id'] = leave.leave_id;
-          this.empExistingLeaves.push(leaveDetails);
+          var alreadyAdded = this.empExistingLeaves.filter(currentLeave => {
+            return currentLeave.leave_id == leaveDetails.leave_id;
+          });
+
+          if(alreadyAdded.length > 0){
+            this.empNewLeaves.push(leaveDetails);
+          }
+          else{
+            this.empExistingLeaves.push(leaveDetails);
+          }
         }
         else {
           this.empNewLeaves.push(leaveDetails);
@@ -267,13 +285,6 @@ export class LeaveCalendarComponent implements OnInit {
   saveLeaves() {
     this.generateLeaves();
 
-    if (this.empNewLeaves.length > 0) {
-      this.leaveService.addNewLeaves(this.empNewLeaves)
-        .subscribe(data => {
-          
-        })
-    }
-
     var deleteLeaveIds = [];
     console.log('Initial Leaves *********************************');
     console.log(this.initialLeaveIds);
@@ -294,27 +305,64 @@ export class LeaveCalendarComponent implements OnInit {
       }
     });
 
-    // console.log(deleteLeaveIds);
-    if (this.empExistingLeaves.length > 0) {
-
-      this.leaveService.updateLeaves(this.empExistingLeaves)
+    this.leaveService.saveLeaves(this.empNewLeaves,this.empExistingLeaves,deleteLeaveIds)
         .subscribe(data => {
-          
-        })
-    }
+          this.showLoad = true;
+    this.blockUI.start('Please Wait...');
+    this.events = [];
+    this.leaveService.getLeavesByUserId()
+      .subscribe(data => {
+        console.log(data);
+        this.leaves = [];
+        this.leaves = data.leaves;
+        if (this.leaves.length > 0) {
+          this.leaves.forEach(leave => {
+            if (leave.leave_type == "PLANNED") {
 
-    if (deleteLeaveIds.length > 0) {
-      this.leaveService.deleteLeaves(deleteLeaveIds)
-        .subscribe(data => {
-          
-        })
-    }
+              var pendingEvent = {
+                title: 'Pending Approval',
+                leave_id: leave.leave_id,
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.green,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
 
-    swal("Great","Leaves Saved Successfully !","info");
+              var approvedEvent = {
+                title: 'Leave Approved',
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.blue,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
 
-
-
-
+              if (leave.leave_status == "PENDING") {
+                this.events.push(pendingEvent);
+                this.initialLeaveIds.push(pendingEvent.leave_id);
+              }
+              else if (leave.leave_status == "APPROVED") {
+                this.events.push(approvedEvent);
+              }
+            }
+          }
+          );
+        }
+        this.showLoad = false;
+        this.cdRef.detectChanges();
+      })
+    
+    },err=>{
+      this.blockUI.stop();
+        swal("Error","Leaves could not be saved","error");
+    });
   }
 
   getDateDifference(date) {
@@ -332,31 +380,31 @@ export class LeaveCalendarComponent implements OnInit {
     var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
 
     if (clickedObj.day.isToday) {
-      swal("Oops", "You cannot place leaves for today", "warning");
+      swal("Error", "You cannot place leaves for today", "error");
       return;
     }
 
     var diffDays = this.getDateDifference(date);
 
     if (clickedObj.day.isPast && diffDays > 2 && clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Pending Approval") {
-      swal("Oops", "You cannot modify leaves applied for past dates" , "warning");
+      swal("Error", "You cannot modify leaves applied for past dates" , "error");
       return;
     }
 
     if (clickedObj.day.isPast && diffDays > 1) {
-      swal("Oops", "You cannot place leaves for past dates" , "warning");
+      swal("Error", "You cannot place leaves for past dates" , "error");
       return;
     }
 
     if (clickedObj.day.isFuture && diffDays < 7) {
-      swal("Oops", "Leaves can only be planned prior to a week", "warning");
+      swal("Error", "Leaves can only be planned prior to a week", "error");
       return;
     }
 
 
     if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Leave Approved") {
 
-      swal("Oops", "Leave is already Approved", "warning");
+      swal("Error", "Leave is already Approved", "error");
       return;
     }
 
@@ -416,11 +464,11 @@ export class LeaveCalendarComponent implements OnInit {
       var diffDays = this.getDateDifference(date);
 
       if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
+        swal("Error", "Leaves can only be planned prior to a week", "error");
         return;
       }
       else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
+        swal("Error", "More than 3 leaves have to planned before 2 weeks", "error");
         return;
       }
 
@@ -456,7 +504,7 @@ export class LeaveCalendarComponent implements OnInit {
       var diffDays = this.getDateDifference(date);
 
       if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
+        swal("Error", "Leaves can only be planned prior to a week", "error");
         var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
         event.start = startOfDay(dayAfterDate);
         if (index > -1) {
@@ -467,7 +515,7 @@ export class LeaveCalendarComponent implements OnInit {
         return;
       }
       else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
+        swal("Error", "More than 3 leaves have to planned before 2 weeks", "error");
         var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
         event.start = startOfDay(dayAfterDate);
         if (index > -1) {
@@ -505,7 +553,7 @@ export class LeaveCalendarComponent implements OnInit {
       var diffDays = this.getDateDifference(date);
 
       if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
+        swal("Error", "Leaves can only be planned prior to a week", "error");
         var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
         event.end = endOfDay(dayBeforeDate);
         if (index > -1) {
@@ -516,7 +564,7 @@ export class LeaveCalendarComponent implements OnInit {
         return;
       }
       else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
+        swal("Error", "More than 3 leaves have to planned before 2 weeks", "error");
         var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
         event.end = endOfDay(dayBeforeDate);
         if (index > -1) {
@@ -604,7 +652,7 @@ export class LeaveCalendarComponent implements OnInit {
       var diffDays = this.getDateDifference(date);
 
       if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
+        swal("Error", "Leaves can only be planned prior to a week", "error");
         return;
       }
       else if (leavesCount == 2 && diffDays < 14) {

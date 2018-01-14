@@ -5,6 +5,7 @@ import { ClarityModule } from "clarity-angular";
 import { CalendarModule } from 'angular-calendar';
 import { routing } from '../app/Router';
 import { FormsModule ,ReactiveFormsModule } from '@angular/forms';
+import { BlockUIModule } from 'ng-block-ui';
 
 import { MaterialModule } from '../app/material';
 import { AppComponent } from './app.component';
@@ -63,6 +64,7 @@ import { LeaderServiceService } from '../app/services/leader-service.service';
     CalendarModule.forRoot(),
     FormsModule,
     MaterialModule,
+    BlockUIModule,
     ReactiveFormsModule
   ],
   providers: [UserService,ApiService,JwtService,AuthGuard,LeaveServiceService,LeaderServiceService],

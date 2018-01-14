@@ -28,14 +28,14 @@ h2 {
 
 
 .pending-abc {
-    background-color: pink !important;
+    background-color: #85C81A !important;
 }
 .pendingLeave {
     background-color: rgb(227, 188, 8) !important;
 }
 
 .approvedLeave {
-    background-color: #007cbb;
+    background-color: #007cbb !important;
 }
 
 .content {
@@ -45,3 +45,5 @@ h2 {
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
   }
+
+  
