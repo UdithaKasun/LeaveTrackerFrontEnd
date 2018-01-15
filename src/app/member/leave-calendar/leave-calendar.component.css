@@ -29,6 +29,7 @@ h2 {
 
 .pending-abc {
     background-color: #85C81A !important;
+    color : white !important;
 }
 .pendingLeave {
     background-color: rgb(227, 188, 8) !important;
@@ -36,7 +37,27 @@ h2 {
 
 .approvedLeave {
     background-color: #007cbb !important;
+    color : white !important;
 }
+
+.declinedLeave {
+    background-color: #F52F22 !important;
+    color : white !important;
+}
+
+.unplannedLeave{
+    background-color: #EE4A08 !important;
+    color : white !important;
+  }
+.cal-month-view .cal-day-badge {
+    display: none !important;
+}
+
+.cal-month-view .cal-day-cell.cal-out-month .cal-day-number {
+    opacity: 0.5 !important;
+}
+
+
 
 .content {
     position: absolute;

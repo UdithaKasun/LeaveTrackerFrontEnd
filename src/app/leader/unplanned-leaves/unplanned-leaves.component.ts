@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { startWith } from 'rxjs/operators/startWith';
 import { map } from 'rxjs/operators/map';
@@ -17,72 +17,251 @@ import { Observable } from 'rxjs/Observable';
 import { CalendarMonthViewDay } from "angular-calendar";
 import { LeaderServiceService } from '../../services/leader-service.service'
 import { Response } from '@angular/http/src/static_response';
+import { NgBlockUI, BlockUI } from 'ng-block-ui';
+import { LeaveServiceService } from '../../services/leave-service.service';
 
 const colors: any = {
   red: {
-    primary: '#ad2121',
+    primary: '#F52F22',
     secondary: '#FAE3E3'
   },
   blue: {
-    primary: '#1e90ff',
-    secondary: '#D1E8FF'
+    primary: '#007cbb',
+    secondary: '#FDF1BA'
   },
   yellow: {
     primary: '#e3bc08',
     secondary: '#FDF1BA'
   }
   ,
-  green: {
-    primary: '#48960C',
+  green : {
+    primary: '#85C81A',
+    secondary: '#FDF1BA'
+  },
+  orange : {
+    primary: '#EE4A08',
     secondary: '#FDF1BA'
   }
+
 };
 
-export class State {
-  constructor(public name: string) { }
+export class Employee {
+  constructor(public employeeID: string) { }
 }
 
 @Component({
   selector: 'app-unplanned-leaves',
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './unplanned-leaves.component.html',
   styleUrls: ['./unplanned-leaves.component.css']
 })
 export class UnplannedLeavesComponent implements OnInit {
   showCalendar: boolean;
+  selectedEmp : String;
+  @BlockUI() blockUI: NgBlockUI;
+  employeeCtrl: FormControl;
+  filteredEmpObs: Observable<any[]>;
 
-  ngOnInit(): void {
-    this.loadEvents();
-    this.showCalendar = false;
-  }
-  selectMember() {
-    this.showCalendar = true;
-  }
-
-  stateCtrl: FormControl;
-  filteredStates: Observable<any[]>;
-
-  states: State[] = [];
-  constructor(public leaderService: LeaderServiceService) {
-    this.stateCtrl = new FormControl();
+  employees: Employee[] = [];
+  initialLeaveIds = [];
+  constructor(public leaderService: LeaderServiceService,private leaveService: LeaveServiceService, private cdRef: ChangeDetectorRef) {
+    this.employeeCtrl = new FormControl();
     leaderService.getleaderMembers().subscribe(Response => {
-      console.log(Response);
       for (var i = 0; i < Response.length; i++) {
-        this.states.push({ name: Response[i].username })
+        this.employees.push({ employeeID: Response[i].username })
       }
-      console.log(this.states);
-      
-      this.filteredStates = this.stateCtrl.valueChanges
+      this.filteredEmpObs = this.employeeCtrl.valueChanges
         .pipe(
         startWith(''),
-        map(state => state ? this.filterStates(state) : this.states.slice())
+        map(state => state ? this.filteredEmp(state) : this.employees.slice())
         );
     })
 
   }
 
-  filterStates(name: string) {
-    return this.states.filter(state =>
-      state.name.toLowerCase().indexOf(name.toLowerCase()) === 0);
+  ngOnInit(): void {
+    this.showCalendar = false;
+  }
+
+  refreshLeaves(){
+    this.selectMember(this.selectedEmp);
+  }
+
+  selectMember(empID) {
+    this.selectedEmp = empID;
+    this.blockUI.start('Fetching Leave Details...');
+    this.events = [];
+    this.leaveService.getLeavesForUser(empID)
+      .subscribe(data => {
+        console.log(data);
+        this.leaves = [];
+        this.leaves = data.leaves;
+
+        if (this.leaves.length > 0) {
+          this.leaves.forEach(leave => {
+            if (leave.leave_type == "PLANNED") {
+
+              var pendingEvent = {
+                title: 'Pending Approval',
+                leave_id: leave.leave_id,
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.green,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+
+              var approvedEvent = {
+                title: 'Leave Approved',
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.blue,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+
+              if (leave.leave_status == "PENDING") {
+                this.events.push(pendingEvent);
+                //this.initialLeaveIds.push(pendingEvent.leave_id);
+              }
+              else if (leave.leave_status == "APPROVED") {
+                this.events.push(approvedEvent);
+              }
+            }
+            else if(leave.leave_type == "UNPLANNED"){
+              var unplannedLeave = {
+                title: 'Unplanned Leave',
+                leave_id: leave.leave_id,
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.orange,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+              this.initialLeaveIds.push(leave.leave_id);
+              this.events.push(unplannedLeave);
+            }
+          }
+          );
+        }
+        console.log(this.events);
+        //this.showLoad = false;
+        this.viewDate = new Date();
+        this.cdRef.detectChanges();
+        this.blockUI.stop();
+        this.showCalendar = true;
+      },error => {
+        this.blockUI.stop();
+        swal("Error","Leaves could not be Fetched","error");
+      })
+  }
+
+  
+  generateLeaves() {
+    this.empNewLeaves = [];
+    this.empExistingLeaves = [];
+    this.events.forEach(leave => {
+      var leaveDetails;
+
+      if (leave.title == "Unplanned Leave") {
+        if (leave.leave_id == undefined) {
+          leaveDetails = {
+            user_id: this.selectedEmp,
+            leave_from_date: new Date(leave.start).toISOString(),
+            leave_to_date: new Date(leave.end).toISOString(),
+            leave_count: this.calculateLeaveLength(leave.start, leave.end),
+            leave_type: "UNPLANNED",
+            leave_status: "OTHER",
+            leave_approver_id: window.localStorage['userid'],
+            leave_id: ""
+          }
+        } else {
+          leaveDetails = {
+            user_id: this.selectedEmp,
+            leave_from_date: new Date(leave.start).toISOString(),
+            leave_to_date: new Date(leave.end).toISOString(),
+            leave_count: this.calculateLeaveLength(leave.start, leave.end),
+            leave_type: "UNPLANNED",
+            leave_status: "OTHER",
+            leave_approver_id: window.localStorage['userid'],
+            leave_id: leave.leave_id
+          }
+        }
+
+        if (leave.leave_id) {
+          leaveDetails['leave_id'] = leave.leave_id;
+          var alreadyAdded = this.empExistingLeaves.filter(currentLeave => {
+            return currentLeave.leave_id == leaveDetails.leave_id;
+          });
+
+          if(alreadyAdded.length > 0){
+            this.empNewLeaves.push(leaveDetails);
+          }
+          else{
+            this.empExistingLeaves.push(leaveDetails);
+          }
+        }
+        else {
+          this.empNewLeaves.push(leaveDetails);
+        }
+      }
+    })
+
+    console.log("Existing Leaves");
+    console.log(this.empExistingLeaves);
+    console.log("New Leaves");
+    console.log(this.empNewLeaves);
+  }
+
+  saveLeaves() {
+    this.blockUI.start('Saving Leave Data...');
+    this.generateLeaves();
+    var deleteLeaveIds = [];
+    console.log('Initial Leaves *********************************');
+    console.log(this.initialLeaveIds);
+    console.log('Exisiting Leaves *********************************');
+    console.log(this.empExistingLeaves);
+
+    this.initialLeaveIds.forEach(leaveId => {
+      var available = false;
+
+      this.empExistingLeaves.forEach(leave => {
+        if (leave.leave_id == leaveId) {
+          available = true;
+        }
+      });
+      if (!available) {
+        deleteLeaveIds.push(leaveId);
+      }
+    });
+
+    console.log('Delete Leaves *********************************');
+    console.log(deleteLeaveIds);
+
+    this.leaveService.saveLeaves(this.empNewLeaves,this.empExistingLeaves,deleteLeaveIds)
+        .subscribe(data => {
+          this.blockUI.stop();
+    swal("Success","Leaves saved successfully","success");
+    },err=>{
+      this.blockUI.stop();
+        swal("Error","Leaves could not be saved","error");
+    });
+  }
+ 
+
+  filteredEmp(employeeID: string) {
+    console.log("Here : " + employeeID);
+    return this.employees.filter(state =>
+      state.employeeID.toLowerCase().indexOf(employeeID.toLowerCase()) === 0);
   }
 
 
@@ -119,46 +298,7 @@ export class UnplannedLeavesComponent implements OnInit {
   excludeDays: number[] = [0, 6];
   events = [];
 
-  loadEvents() {
-    this.leaves.forEach(leave => {
-      if (leave.leave_type == "PLANNED") {
-
-        var pendingEvent = {
-          title: 'Pending Approval',
-          leave_id: leave.leave_id,
-          start: startOfDay(new Date(leave.leave_from_date)),
-          end: endOfDay(new Date(leave.leave_to_date)),
-          color: colors.yellow,
-          draggable: false,
-          resizable: {
-            beforeStart: false,
-            afterEnd: false
-          }
-        };
-
-        var approvedEvent = {
-          title: 'Leave Approved',
-          start: startOfDay(new Date(leave.leave_from_date)),
-          end: endOfDay(new Date(leave.leave_to_date)),
-          color: colors.green,
-          draggable: false,
-          resizable: {
-            beforeStart: false,
-            afterEnd: false
-          }
-        };
-
-        if (leave.leave_status == "PENDING") {
-          this.events.push(pendingEvent);
-        }
-        else if (leave.leave_status == "APPROVED") {
-          this.events.push(approvedEvent);
-        }
-      }
-    }
-    );
-  }
-
+ 
   calculateLeaveLength(startDate, endDate) {
     var date1 = new Date(startDate);
     var date2 = new Date(endDate);
@@ -187,36 +327,7 @@ export class UnplannedLeavesComponent implements OnInit {
     }
   }
 
-  generateLeaves() {
-    this.empNewLeaves = [];
-    this.empExistingLeaves = [];
-    this.events.forEach(leave => {
-      if (leave.title != "Leave Approved") {
-        var leaveDetails = {
-          user_id: "U001",
-          leave_from_date: new Date(leave.start).toISOString(),
-          leave_to_date: new Date(leave.end).toISOString(),
-          leave_count: this.calculateLeaveLength(leave.start, leave.end),
-          leave_type: "PLANNED",
-          leave_status: "PENDING",
-          leave_approver_id: "L001"
-        }
-
-        if (leave.leave_id) {
-          leaveDetails['leave_id'] = leave.leave_id;
-          this.empExistingLeaves.push(leaveDetails);
-        }
-        else {
-          this.empNewLeaves.push(leaveDetails);
-        }
-      }
-    })
-
-    console.log("Existing Leaves");
-    console.log(this.empExistingLeaves);
-    console.log("New Leaves");
-    console.log(this.empNewLeaves);
-  }
+  
 
   getStartOfWeek(d) {
     d = new Date(d);
@@ -261,50 +372,43 @@ export class UnplannedLeavesComponent implements OnInit {
     var todayDate = new Date().getFullYear() + "/" + (new Date().getMonth() + 1) + "/" + new Date().getDate();
     var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
 
-    if (clickedObj.day.isToday) {
-      swal("Oops", "You cannot place leaves for today", "warning");
-      return;
-    }
-
     var diffDays = this.getDateDifference(date);
 
-    if (clickedObj.day.isPast && diffDays > 2 && clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Pending Approval") {
-      swal("Oops", "You cannot modify leaves applied for past dates" + diffDays, "warning");
+    if(clickedObj.day.isPast && diffDays > 7){
+      swal("Error", "You can only mark leaves within a week", "error");
       return;
     }
 
-    if (clickedObj.day.isPast && diffDays > 2) {
-      swal("Oops", "You cannot place leaves for past dates" + diffDays, "warning");
+    if(clickedObj.day.isFuture){
+      swal("Error", "You cannot mark Future days as Unplanned Leaves", "error");
       return;
     }
 
-    if (clickedObj.day.isFuture && diffDays < 7) {
-      swal("Oops", "Leaves can only be planned prior to a week", "warning");
+    if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Pending Approval") {
+      swal("Error", "Leave is currently Pending Approval", "error");
       return;
     }
-
-
+   
     if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Leave Approved") {
-
-      swal("Oops", "Leave is already Approved", "warning");
+      swal("Error", "Leave is already Approved", "error");
       return;
     }
 
     var startOfDate = this.events.filter(function (item) {
-      return new Date(item.start).getTime() == new Date(date).getTime() && item.title != "Leave Approved";
+      return new Date(item.start).getTime() == new Date(date).getTime() && item.title != "Leave Approved" && item.title != "Pending Approval";
     });
 
     var endOfDate = this.events.filter(function (item) {
       var endDate = new Date(item.end).getFullYear() + "/" + (new Date(item.end).getMonth() + 1) + "/" + new Date(item.end).getDate();
       var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-      return endDate == clickedDate && item.title != "Leave Approved";
+      return endDate == clickedDate && item.title != "Leave Approved" && item.title != "Pending Approval";
     });
 
     var endFound = this.events.filter(function (item) {
       var startDate = new Date(item.start).setDate(new Date(item.start).getDate() - 1);
       var endDate = new Date(startDate).getFullYear() + "/" + (new Date(startDate).getMonth() + 1) + "/" + new Date(startDate).getDate();
       var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-      return clickedDate == endDate && item.title != "Leave Approved";
+      return clickedDate == endDate && item.title != "Leave Approved" && item.title != "Pending Approval";
 
     });
 
@@ -312,26 +416,26 @@ export class UnplannedLeavesComponent implements OnInit {
       var afterDate = new Date(item.end).setDate(new Date(item.end).getDate() + 1);
       var endDate = new Date(afterDate).getFullYear() + "/" + (new Date(afterDate).getMonth() + 1) + "/" + new Date(afterDate).getDate();
       var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-      return clickedDate == endDate && item.title != "Leave Approved";
+      return clickedDate == endDate && item.title != "Leave Approved" && item.title != "Pending Approval";
     });
 
     var betweenDays = this.events.filter(function (item) {
       var endofDay = endOfDay(new Date(date));
-      return item.title != "Leave Approved" && new Date(item.start).getTime() < new Date(date).getTime() && new Date(item.end).getTime() > endofDay.getTime();
+      return item.title != "Leave Approved" && item.title != "Pending Approval" && new Date(item.start).getTime() < new Date(date).getTime() && new Date(item.end).getTime() > endofDay.getTime();
     });
 
     var dayAfterLeave = this.events.filter(function (item) {
       var afterDate = new Date(item.start).getFullYear() + "/" + (new Date(item.start).getMonth() + 1) + "/" + new Date(item.start).getDate();
       var checkDate = new Date(new Date(date).setDate(new Date(date).getDate() + 1));
       var clickedBeforeDate = new Date(checkDate).getFullYear() + "/" + (new Date(checkDate).getMonth() + 1) + "/" + new Date(checkDate).getDate();
-      return afterDate == clickedBeforeDate && item.title != "Leave Approved";
+      return afterDate == clickedBeforeDate && item.title != "Leave Approved" && item.title != "Pending Approval";
     });
 
     var dayBeforeLeave = this.events.filter(function (item) {
       var beforeDate = new Date(item.end).getFullYear() + "/" + (new Date(item.end).getMonth() + 1) + "/" + new Date(item.end).getDate();
       var checkDate = new Date(new Date(date).setDate(new Date(date).getDate() - 1));
       var clickedBeforeDate = new Date(checkDate).getFullYear() + "/" + (new Date(checkDate).getMonth() + 1) + "/" + new Date(checkDate).getDate();
-      return beforeDate == clickedBeforeDate && item.title != "Leave Approved";
+      return beforeDate == clickedBeforeDate && item.title != "Leave Approved" && item.title != "Pending Approval";
     });
 
     if (startFound.length > 0 && endFound.length > 0) {
@@ -345,15 +449,6 @@ export class UnplannedLeavesComponent implements OnInit {
       var leavesCount = this.calculateLeaveWithinWeek(startDate);
       var diffDays = this.getDateDifference(date);
 
-      if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        return;
-      }
-      else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        return;
-      }
-
       startevent.end = endOfDay(endDate);
       if (startEventIndex > -1) {
         this.events.splice(startEventIndex, 1);
@@ -363,7 +458,7 @@ export class UnplannedLeavesComponent implements OnInit {
         var startDate = new Date(item.start).setDate(new Date(item.start).getDate() - 1);
         var endDate = new Date(startDate).getFullYear() + "/" + (new Date(startDate).getMonth() + 1) + "/" + new Date(startDate).getDate();
         var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-        return clickedDate == endDate && item.title != "Leave Approved";
+        return clickedDate == endDate && item.title != "Leave Approved" && item.title != "Pending Approval";
       });
 
       endEventIndex = this.events.indexOf(reCalcEnd[0]);
@@ -384,30 +479,6 @@ export class UnplannedLeavesComponent implements OnInit {
 
       var leavesCount = this.calculateLeaveWithinWeek(date) - 1;
       var diffDays = this.getDateDifference(date);
-
-      if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
-        event.start = startOfDay(dayAfterDate);
-        if (index > -1) {
-          this.events.splice(index, 1);
-        }
-        this.events.push(event);
-        this.viewDate = subDays(this.viewDate, 0);
-        return;
-      }
-      else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        var dayAfterDate = new Date(event.start).setDate(new Date(event.start).getDate() + 1);
-        event.start = startOfDay(dayAfterDate);
-        if (index > -1) {
-          this.events.splice(index, 1);
-        }
-        this.events.push(event);
-        this.viewDate = subDays(this.viewDate, 0);
-        return;
-      }
-
       if (index > -1) {
         this.events.splice(index, 1);
       }
@@ -423,40 +494,8 @@ export class UnplannedLeavesComponent implements OnInit {
 
       event.start = startOfDay(startDate);
       event.end = endOfDay(new Date(date));
-
-      // var leaveLength = this.calculateLeaveLength(event.start, event.end);
-      // var currentLength = this.calculateLeaveLength(new Date(), event.end);
-      // if (leaveLength >= 3 && currentLength < 14) {
-      //   swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-      //   return;
-      // }
-
       var leavesCount = this.calculateLeaveWithinWeek(date) - 1;
       var diffDays = this.getDateDifference(date);
-
-      if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
-        event.end = endOfDay(dayBeforeDate);
-        if (index > -1) {
-          this.events.splice(index, 1);
-        }
-        this.events.push(event);
-        this.viewDate = subDays(this.viewDate, 0);
-        return;
-      }
-      else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        var dayBeforeDate = new Date(event.end).setDate(new Date(event.end).getDate() - 1);
-        event.end = endOfDay(dayBeforeDate);
-        if (index > -1) {
-          this.events.splice(index, 1);
-        }
-        this.events.push(event);
-        this.viewDate = subDays(this.viewDate, 0);
-        return;
-      }
-
       if (index > -1) {
         this.events.splice(index, 1);
       }
@@ -476,10 +515,10 @@ export class UnplannedLeavesComponent implements OnInit {
       this.calculateLeaveWithinWeek(startDate);
 
       var additionalEvent = {
-        title: 'Pending Approval',
+        title: 'Unplanned Leave',
         start: startOfDay(new Date(new Date(date).setDate(new Date(date).getDate() + 1))),
         end: endOfDay(new Date(endDate)),
-        color: colors.yellow,
+        color: colors.orange,
         draggable: true,
         resizable: {
           beforeStart: true,
@@ -532,20 +571,11 @@ export class UnplannedLeavesComponent implements OnInit {
     else {
       var leavesCount = this.calculateLeaveWithinWeek(date);
       var diffDays = this.getDateDifference(date);
-
-      if (leavesCount == 1 && diffDays < 7) {
-        swal("Oops", "Leaves can only be planned prior to a week", "warning");
-        return;
-      }
-      else if (leavesCount == 2 && diffDays < 14) {
-        swal("Oops", "More than 3 leaves have to planned before 2 weeks", "warning");
-        return;
-      }
       this.events.push({
-        title: 'Pending Approval',
+        title: 'Unplanned Leave',
         start: startOfDay(new Date(date)),
         end: endOfDay(new Date(date)),
-        color: colors.yellow,
+        color: colors.orange,
         draggable: true,
         resizable: {
           beforeStart: true,
@@ -554,10 +584,7 @@ export class UnplannedLeavesComponent implements OnInit {
       });
       this.viewDate = subDays(this.viewDate, 0);
     }
-
     console.log(this.events);
-
-
   }
 
   beforeMonthViewRender({ body }: { body: CalendarMonthViewDay[] }): void {
@@ -565,6 +592,12 @@ export class UnplannedLeavesComponent implements OnInit {
     body.forEach(day => {
       if (day.events.length > 0 && day.events[0].title == "Pending Approval") {
         day.cssClass = 'pending-abc';
+      }
+      else if (day.events.length > 0 && day.events[0].title == "Leave Approved") {
+        day.cssClass = 'approvedLeave';
+      }
+      else if (day.events.length > 0 && day.events[0].title == "Unplanned Leave") {
+        day.cssClass = 'unplannedLeave';
       }
     });
   }

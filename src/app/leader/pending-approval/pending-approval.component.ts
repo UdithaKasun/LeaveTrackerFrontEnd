@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
 import swal from 'sweetalert2';
+import { LeaderServiceService } from '../../services/leader-service.service';
+import { NgBlockUI, BlockUI } from 'ng-block-ui';
 
 @Component({
   selector: 'app-pending-approval',
@@ -8,117 +10,62 @@ import swal from 'sweetalert2';
 })
 export class PendingApprovalComponent implements OnInit {
 
-  constructor() { }
+  @BlockUI() blockUI: NgBlockUI;
+  
+  constructor( private leaderService : LeaderServiceService) { }
 
-  leaves=[{
-    name:"Sameera",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "04"
-  },
-  {
-    name:"Chamindu",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "02"
-  },
-  {
-    name:"Prabath",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "01"
-  },
-  {
-    name:"Kasun",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "03"
-  },
-  {
-    name:"Chamindu",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "02"
-  },
-  {
-    name:"Prabath",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "01"
-  },
-  {
-    name:"Kasun",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "03"
-  },
-  {
-    name:"Chamindu",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "02"
-  },
-  {
-    name:"Prabath",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "01"
-  },
-  {
-    name:"Kasun",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "03"
-  },
-  {
-    name:"Chamindu",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "02"
-  },
-  {
-    name:"Prabath",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "01"
-  },
-  {
-    name:"Kasun",
-    from : "2018-01-02",
-    to: "2018-01-05",
-    count: "03"
-  }];
+  leaves=[];
 
   ngOnInit() {
+    this.loadLeaves();
   }
 
-  approve(){
-    swal({
-      position: 'center',
-      type: 'success',
-      title: 'Leave approved',
-      showConfirmButton: false,
-      timer: 1500
+  loadLeaves(){
+    this.leaderService.getPendingLeavesForLeader()
+    .subscribe(data =>{
+      this.leaves = [];
+      data.leaves.forEach(leave => {
+        var newLeave = {};
+        var fromDate = new Date(leave.leave_from_date).setDate(new Date(leave.leave_from_date).getDate() + 1);
+        newLeave['leaveid'] = leave.leave_id;
+        newLeave['name'] = leave.user_id;
+        newLeave['from'] = new Date(fromDate).toISOString().slice(0, 10);
+        newLeave['to'] = new Date(leave.leave_to_date).toISOString().slice(0, 10);
+        newLeave['count'] = leave.leave_count;
+        this.leaves.push(newLeave);
+      });
+      this.leaderService.pendingLeaveCountSource.next(this.leaves.length);
+    }
+  )
+  }
+
+  approve(leave_id){
+    this.blockUI.start();
+    this.leaderService.updateLeaveStatus(leave_id,"APPROVED",this.leaves.length)
+    .subscribe(data=>{
+      this.blockUI.stop();
+      swal("Success","Leave Approved Successfully","success");
+      var leave = this.leaves.filter(item => {
+        return item.leaveid  == leave_id;
+      })
+
+      var index = this.leaves.indexOf(leave);
+      this.leaves.splice(index, 1);
     })
   }
 
-  reject(){
-    swal({
-      title: 'Are you sure?',
-      text: "You won't to disapprove this leave!",
-      type: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, reject it!'
-    }).then((result) => {
-      if (result.value) {
-        swal(
-          'Rejected!',
-          'Your leave has been rejected.',
-          'success'
-        )
-      }
+  reject(leave_id){
+    this.blockUI.start();
+    this.leaderService.updateLeaveStatus(leave_id,"REJECTED",this.leaves.length)
+    .subscribe(data=>{
+      this.blockUI.stop();
+      swal("Success","Leave Rejected Successfully","success");
+      var leave = this.leaves.filter(item => {
+        return item.leaveid  == leave_id;
+      })
+
+      var index = this.leaves.indexOf(leave);
+      this.leaves.splice(index, 1);
     })
   }
 

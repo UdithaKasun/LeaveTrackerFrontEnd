@@ -9,11 +9,17 @@ export class AuthGuardService implements CanActivate{
   isUserLogged : boolean=false;
   canActivate( route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean> | Promise<boolean> {
     console.log("IsLogged : " + this.userService.isLogged);
-    if(this.isUserLogged){
+
+    const expectedRole = route.data.expectedRole;
+    var index = expectedRole.indexOf(this.userService.userType);
+    console.log("User Index " + index);
+    console.log(expectedRole);
+    if(this.isUserLogged && index != -1){
       return true;
     }
     else{
       this.router.navigate(['/login']);
+      this.userService.destroyAuth();
       return false;
     };
   }
@@ -24,6 +30,7 @@ export class AuthGuardService implements CanActivate{
       if(status){
         console.log('Setting hhhhh')
         this.isUserLogged = true;
+        console.log(this.userService.userType);
       }
       else{
         this.isUserLogged = false;

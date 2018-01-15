@@ -20,8 +20,12 @@
     <mwl-calendar-month-view (beforeViewRender)="beforeMonthViewRender($event)" [(viewDate)]="viewDate" [events]="events" [excludeDays]="excludeDays"
         (dayClicked)="showDate($event)">
     </mwl-calendar-month-view>
-    <br>
+
     <div class="row flex-items-xs-right">
-        <button class="btn btn-primary" (click)="saveLeaves()">Submit</button>
+        <button class="btn btn-danger" (click)="refreshLeaves()">Refresh</button>
+        <button class="btn btn-primary" (click)="saveLeaves()">Save</button>
     </div>
+
+           
+
 </div>

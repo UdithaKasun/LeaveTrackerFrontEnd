@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { UserService } from '../../services/user-service.service';
+import { startWith } from 'rxjs/operators/startWith';
+import { map } from 'rxjs/operators/map';
 import swal from 'sweetalert2';
+import { Observable } from 'rxjs/Observable';
+import { LeaderServiceService } from '../../services/leader-service.service';
 
 @Component({
   selector: 'app-edituser',
@@ -11,12 +15,34 @@ import swal from 'sweetalert2';
 export class EdituserComponent  {
 
   leads = [];
+  employees = [];
+  employeeCtrl: FormControl;
+  filteredEmpObs: Observable<any[]>;
+  
   userRoles = ["Normal","Leader","Administrator"];
-  constructor(private userService : UserService){
+  constructor(private userService : UserService, private leaderService:LeaderServiceService){
+    this.employeeCtrl = new FormControl();
     this.userService.loadLeads()
     .subscribe(leads => {
       this.leads = leads;
     })
+
+    leaderService.getleaderMembers().subscribe(Response => {
+      for (var i = 0; i < Response.length; i++) {
+        this.employees.push({ employeeID: Response[i].username })
+      }
+      this.filteredEmpObs = this.employeeCtrl.valueChanges
+        .pipe(
+        startWith(''),
+        map(state => state ? this.filteredEmp(state) : this.employees.slice())
+        );
+    })
+  }
+
+  filteredEmp(employeeID: string) {
+    console.log("Here : " + employeeID);
+    return this.employees.filter(state =>
+      state.employeeID.toLowerCase().indexOf(employeeID.toLowerCase()) === 0);
   }
 
   employeeInfoForm = new FormGroup({

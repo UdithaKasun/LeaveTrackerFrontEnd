@@ -1,5 +1,8 @@
 
-  <h3>Pending Approvals</h3>
+  <h3 style="display:inline">Pending Approvals</h3>
+  <button type="button" class="btn btn-icon" (click)="loadLeaves()">
+      <clr-icon shape="refresh"></clr-icon>
+  </button>
   <clr-datagrid>
     <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
     <clr-dg-column [clrDgField]="'from'">From</clr-dg-column>
@@ -13,8 +16,8 @@
       <clr-dg-cell class="centertd">{{row.to}}</clr-dg-cell>
       <clr-dg-cell class="centertd">{{row.count}}</clr-dg-cell>
       <clr-dg-cell>
-        <button class="btn btn-success btn-sm" (click)="approve()">Accept</button>
-        <button class="btn btn-danger btn-sm" (click)="reject()"> Reject </button>
+        <button class="btn btn-success btn-sm" (click)="approve(row.leaveid)">Accept</button>
+        <button class="btn btn-danger btn-sm" (click)="reject(row.leaveid)"> Reject </button>
       </clr-dg-cell>
     </clr-dg-row>
 

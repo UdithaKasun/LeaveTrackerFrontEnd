@@ -2,10 +2,10 @@
     <div class="cardaa" align="right">
         <form class="example-form">
             <mat-form-field class="example-full-width">
-                <input matInput placeholder="Search Employee" aria-label="Search Employee" [matAutocomplete]="auto" [formControl]="stateCtrl">
+                <input matInput placeholder="Search Employee" aria-label="Search Employee" [matAutocomplete]="auto" [formControl]="employeeCtrl">
                 <mat-autocomplete #auto="matAutocomplete">
-                    <mat-option *ngFor="let state of filteredStates | async" [value]="state.name" (click)="selectMember()">
-                        <span>{{ state.name }}</span>
+                    <mat-option *ngFor="let emp of filteredEmpObs | async" [value]="emp.employeeID" (click)="selectMember(emp.employeeID)">
+                        <span>{{ emp.employeeID }}</span>
                     </mat-option>
                 </mat-autocomplete>
             </mat-form-field>
@@ -34,7 +34,8 @@
     <br>
     <div class="row flex-items-xs-right">
 
-        <button class="btn btn-primary">Submit</button>
+            <button class="btn btn-danger" (click)="refreshLeaves()">Refresh</button>
+        <button class="btn btn-primary" (click)="saveLeaves()">Save</button>
     </div>
 <div>
 </div>

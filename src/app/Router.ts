@@ -18,7 +18,7 @@ import { EdituserComponent } from './administrator/edituser/edituser.component';
 export const routes: Routes = [  
       {
         path: '',
-        redirectTo: '/login', pathMatch: 'full',
+        redirectTo: '/login', pathMatch: 'full'
       },
       {
         path: 'login', 
@@ -29,10 +29,16 @@ export const routes: Routes = [
         component : MemberComponent,
         canActivate: [AuthGuard], 
         children: [
-            { path: '', redirectTo: 'leaveCalendar', pathMatch: 'full' },
-            { path: 'leaveHistory', component: LeaveHistoryComponent },
-            { path: 'leaveCalendar', component: LeaveCalendarComponent }
+            { path: '', redirectTo: 'leaveCalendar', pathMatch: 'full'
+            },
+            { path: 'leaveHistory', component: LeaveHistoryComponent
+            },
+            { path: 'leaveCalendar', component: LeaveCalendarComponent
+            }
           ]
+          ,data: { 
+            expectedRole: ['member']
+          }
       },
       {
         path: 'leader', 
@@ -46,6 +52,9 @@ export const routes: Routes = [
           { path: 'unplannedLeaves', component: UnplannedLeavesComponent },
           { path: 'memberLeaveHistory', component: MemberLeaveHistoryComponent }
         ]
+        , data: { 
+          expectedRole: ['leader']
+        }
       },
       {
         path: 'admin', 
@@ -56,6 +65,10 @@ export const routes: Routes = [
             { path: 'adduser', component: AdduserComponent },
             { path: 'edituser', component: EdituserComponent }
           ]
+          ,
+          data: { 
+            expectedRole: ['member']
+          }
       },
       {
         path: '**', 

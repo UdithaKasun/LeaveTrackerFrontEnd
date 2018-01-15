@@ -20,7 +20,7 @@
         <clr-icon shape="bars" clrVerticalNavIcon></clr-icon>
         Manage Leaves
         <clr-vertical-nav-group-children *clrIfExpanded="true">
-          <a clrVerticalNavLink routerLink="./pendingApproval" routerLinkActive="active">Pending Approvals</a>
+          <a clrVerticalNavLink routerLink="./pendingApproval" routerLinkActive="active">Pending Approvals <span class="badge badge-info">{{   pendingCount }}</span></a>
           <a clrVerticalNavLink routerLink="./unplannedLeaves" routerLinkActive="active">Mark Unplaned Leaves</a>
           <a clrVerticalNavLink routerLink="./memberLeaveHistory" routerLinkActive="active">View History</a>
         </clr-vertical-nav-group-children>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { ApiService } from './api-service.service';
+import { URLSearchParams } from '@angular/http';
 
 @Injectable()
 export class LeaveServiceService {
@@ -13,8 +14,35 @@ export class LeaveServiceService {
     this.leadId = window.localStorage['leadid'];
   }
 
+  getNewNotifications(){
+    let parameters = new URLSearchParams();
+      parameters.append("status","NEW");
+      return this.apiService.get('/notifications/user/' + this.userId,parameters)
+        .map(data => {
+          return data;
+        });
+  }
+
+  markNotificationAsRead(noti_id){
+    var notification = {
+      notification_id : noti_id,
+      status : "READ"
+    };
+    return this.apiService.put('/notifications/status', { notification : notification})
+    .map(data => {
+      return data;
+    });
+  }
+
   getLeavesByUserId() : Observable<any> {
     return this.apiService.get('/leaves/user/' + this.userId)
+    .map(data => {
+      return data;
+    });
+  }
+
+  getLeavesForUser(userId) : Observable<any> {
+    return this.apiService.get('/leaves/user/' + userId)
     .map(data => {
       return data;
     });

@@ -17,7 +17,7 @@ import { BlockUI, NgBlockUI } from 'ng-block-ui';
 
 const colors: any = {
   red: {
-    primary: '#ad2121',
+    primary: '#F52F22',
     secondary: '#FAE3E3'
   },
   blue: {
@@ -31,6 +31,10 @@ const colors: any = {
   ,
   green : {
     primary: '#85C81A',
+    secondary: '#FDF1BA'
+  },
+  orange : {
+    primary: '#EE4A08',
     secondary: '#FDF1BA'
   }
 };
@@ -59,6 +63,12 @@ export class LeaveCalendarComponent implements OnInit {
     this.loadEvents();
   }
 
+  refreshLeaves(){
+    this.showLoad = true;
+    this.blockUI.start('Please Wait...');
+    this.loadEvents();
+  }
+
   beforeMonthViewRender({ body }: { body: CalendarMonthViewDay[] }): void {
     body.forEach(day => {
       if (day.events.length > 0 && day.events[0].title == "Pending Approval") {
@@ -67,6 +77,10 @@ export class LeaveCalendarComponent implements OnInit {
       else if (day.events.length > 0 && day.events[0].title == "Leave Approved") {
         day.cssClass = 'approvedLeave';
       }
+      else if (day.events.length > 0 && day.events[0].title == "Unplanned Leave") {
+        day.cssClass = 'unplannedLeave';
+      }
+      
     });
   }
 
@@ -141,6 +155,18 @@ export class LeaveCalendarComponent implements OnInit {
                 }
               };
 
+              var declinedLeave = {
+                title: 'Leave Rejected',
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.red,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+
               if (leave.leave_status == "PENDING") {
                 this.events.push(pendingEvent);
                 this.initialLeaveIds.push(pendingEvent.leave_id);
@@ -148,6 +174,21 @@ export class LeaveCalendarComponent implements OnInit {
               else if (leave.leave_status == "APPROVED") {
                 this.events.push(approvedEvent);
               }
+            }
+            else if(leave.leave_type == "UNPLANNED"){
+              var unplannedLeave = {
+                title: 'Unplanned Leave',
+                leave_id: leave.leave_id,
+                start: startOfDay(new Date(leave.leave_from_date)),
+                end: endOfDay(new Date(leave.leave_to_date)),
+                color: colors.orange,
+                draggable: false,
+                resizable: {
+                  beforeStart: false,
+                  afterEnd: false
+                }
+              };
+              this.events.push(unplannedLeave);
             }
           }
           );
@@ -198,7 +239,7 @@ export class LeaveCalendarComponent implements OnInit {
     this.events.forEach(leave => {
       var leaveDetails;
 
-      if (leave.title != "Leave Approved") {
+      if (leave.title == "Pending Approval") {
         if (leave.leave_id == undefined) {
           leaveDetails = {
             user_id: window.localStorage['userid'],
@@ -299,11 +340,13 @@ export class LeaveCalendarComponent implements OnInit {
           available = true;
         }
       });
-
       if (!available) {
         deleteLeaveIds.push(leaveId);
       }
     });
+
+    console.log('Delete Leaves *********************************');
+    console.log(deleteLeaveIds);
 
     this.leaveService.saveLeaves(this.empNewLeaves,this.empExistingLeaves,deleteLeaveIds)
         .subscribe(data => {
@@ -357,6 +400,8 @@ export class LeaveCalendarComponent implements OnInit {
         }
         this.showLoad = false;
         this.cdRef.detectChanges();
+        this.blockUI.stop();
+        swal("Success","Leaves saved successfully","success");
       })
     
     },err=>{
@@ -378,6 +423,25 @@ export class LeaveCalendarComponent implements OnInit {
     date = date.day.date;
     var todayDate = new Date().getFullYear() + "/" + (new Date().getMonth() + 1) + "/" + new Date().getDate();
     var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
+
+
+    if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Leave Rejected") {
+
+      swal("Error", "Leave is already Rejected", "error");
+      return;
+    }
+
+    if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Unplanned Leave") {
+
+      swal("Error", "Day is marked as a Unplanned Leave", "error");
+      return;
+    }
+
+    if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Leave Approved") {
+
+      swal("Error", "Leave is already Approved", "error");
+      return;
+    }
 
     if (clickedObj.day.isToday) {
       swal("Error", "You cannot place leaves for today", "error");
@@ -401,28 +465,21 @@ export class LeaveCalendarComponent implements OnInit {
       return;
     }
 
-
-    if (clickedObj.day.badgeTotal == 1 && clickedObj.day.events[0].title == "Leave Approved") {
-
-      swal("Error", "Leave is already Approved", "error");
-      return;
-    }
-
     var startOfDate = this.events.filter(function (item) {
-      return new Date(item.start).getTime() == new Date(date).getTime() && item.title != "Leave Approved";
+      return new Date(item.start).getTime() == new Date(date).getTime() && item.title != "Leave Approved" && item.title != "Leave Rejected";
     });
 
     var endOfDate = this.events.filter(function (item) {
       var endDate = new Date(item.end).getFullYear() + "/" + (new Date(item.end).getMonth() + 1) + "/" + new Date(item.end).getDate();
       var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-      return endDate == clickedDate && item.title != "Leave Approved";
+      return endDate == clickedDate && item.title != "Leave Approved" && item.title != "Leave Rejected";
     });
 
     var endFound = this.events.filter(function (item) {
       var startDate = new Date(item.start).setDate(new Date(item.start).getDate() - 1);
       var endDate = new Date(startDate).getFullYear() + "/" + (new Date(startDate).getMonth() + 1) + "/" + new Date(startDate).getDate();
       var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-      return clickedDate == endDate && item.title != "Leave Approved";
+      return clickedDate == endDate && item.title != "Leave Approved" && item.title != "Leave Rejected";
 
     });
 
@@ -430,26 +487,26 @@ export class LeaveCalendarComponent implements OnInit {
       var afterDate = new Date(item.end).setDate(new Date(item.end).getDate() + 1);
       var endDate = new Date(afterDate).getFullYear() + "/" + (new Date(afterDate).getMonth() + 1) + "/" + new Date(afterDate).getDate();
       var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-      return clickedDate == endDate && item.title != "Leave Approved";
+      return clickedDate == endDate && item.title != "Leave Approved" && item.title != "Leave Rejected";
     });
 
     var betweenDays = this.events.filter(function (item) {
       var endofDay = endOfDay(new Date(date));
-      return item.title != "Leave Approved" && new Date(item.start).getTime() < new Date(date).getTime() && new Date(item.end).getTime() > endofDay.getTime();
+      return item.title != "Leave Rejected" && item.title != "Leave Approved" && new Date(item.start).getTime() < new Date(date).getTime() && new Date(item.end).getTime() > endofDay.getTime();
     });
 
     var dayAfterLeave = this.events.filter(function (item) {
       var afterDate = new Date(item.start).getFullYear() + "/" + (new Date(item.start).getMonth() + 1) + "/" + new Date(item.start).getDate();
       var checkDate = new Date(new Date(date).setDate(new Date(date).getDate() + 1));
       var clickedBeforeDate = new Date(checkDate).getFullYear() + "/" + (new Date(checkDate).getMonth() + 1) + "/" + new Date(checkDate).getDate();
-      return afterDate == clickedBeforeDate && item.title != "Leave Approved";
+      return afterDate == clickedBeforeDate && item.title != "Leave Approved" && item.title != "Leave Rejected";
     });
 
     var dayBeforeLeave = this.events.filter(function (item) {
       var beforeDate = new Date(item.end).getFullYear() + "/" + (new Date(item.end).getMonth() + 1) + "/" + new Date(item.end).getDate();
       var checkDate = new Date(new Date(date).setDate(new Date(date).getDate() - 1));
       var clickedBeforeDate = new Date(checkDate).getFullYear() + "/" + (new Date(checkDate).getMonth() + 1) + "/" + new Date(checkDate).getDate();
-      return beforeDate == clickedBeforeDate && item.title != "Leave Approved";
+      return beforeDate == clickedBeforeDate && item.title != "Leave Approved" && item.title != "Leave Rejected";
     });
 
     if (startFound.length > 0 && endFound.length > 0) {
@@ -481,7 +538,7 @@ export class LeaveCalendarComponent implements OnInit {
         var startDate = new Date(item.start).setDate(new Date(item.start).getDate() - 1);
         var endDate = new Date(startDate).getFullYear() + "/" + (new Date(startDate).getMonth() + 1) + "/" + new Date(startDate).getDate();
         var clickedDate = new Date(date).getFullYear() + "/" + (new Date(date).getMonth() + 1) + "/" + new Date(date).getDate();
-        return clickedDate == endDate && item.title != "Leave Approved";
+        return clickedDate == endDate && item.title != "Leave Approved" && item.title != "Leave Rejected";
       });
 
       endEventIndex = this.events.indexOf(reCalcEnd[0]);
@@ -663,7 +720,7 @@ export class LeaveCalendarComponent implements OnInit {
         title: 'Pending Approval',
         start: startOfDay(new Date(date)),
         end: endOfDay(new Date(date)),
-        color: colors.yellow,
+        color: colors.green,
         draggable: true,
         resizable: {
           beforeStart: true,

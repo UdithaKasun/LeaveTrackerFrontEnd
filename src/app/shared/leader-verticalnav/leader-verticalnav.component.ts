@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { LeaderServiceService } from '../../services/leader-service.service';
 
 @Component({
   selector: 'app-leader-verticalnav',
@@ -7,9 +8,20 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LeaderVerticalnavComponent implements OnInit {
 
-  constructor() { }
+  pendingCount = 0;
+
+  constructor(private leadService : LeaderServiceService) { 
+    this.leadService.leaveCountChanged$.subscribe(
+      leaveCount => {
+        this.pendingCount = leaveCount;
+      });
+  }
 
   ngOnInit() {
+    this.leadService.getPendingLeavesForLeader()
+    .subscribe(data =>{
+      this.pendingCount = data.leaves.length;
+    })
   }
 
 }

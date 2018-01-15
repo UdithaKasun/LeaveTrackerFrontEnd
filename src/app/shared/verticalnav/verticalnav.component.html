@@ -1,5 +1,14 @@
 <div class="main-container">
         <app-header></app-header>
+        <clr-alerts>
+                <clr-alert [clrAlertType]="notification.type" (clrAlertClosedChange)="onClose(notification.notification_id)" [clrAlertAppLevel]="true" *ngFor="let notification of notifications">
+                    <div class="alert-item">
+                        <span class="alert-text">
+                            {{ notification.message }}
+                        </span>
+                    </div>
+                </clr-alert>
+        </clr-alerts>
   <div class="content-container">
       <div class="content-area">
           <router-outlet></router-outlet>

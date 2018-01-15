@@ -15,6 +15,9 @@ export class UserService {
   private isAuthenticatedSubject = new ReplaySubject<boolean>(1);
   public isAuthenticated = this.isAuthenticatedSubject.asObservable();
   public isLogged = false;
+
+  public userType = "";
+
   constructor(private apiService: ApiService, private jwtService : JwtService) {
 
   }
@@ -25,6 +28,7 @@ export class UserService {
     return this.apiService.post('/users/login', {user: credentials})
     .map(
       data => {
+        this.userType = String(data.role).toLocaleLowerCase();
         this.setAuth(data.user);
         return data;
       }
