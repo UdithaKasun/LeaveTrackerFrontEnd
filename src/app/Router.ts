@@ -67,7 +67,7 @@ export const routes: Routes = [
           ]
           ,
           data: { 
-            expectedRole: ['member']
+            expectedRole: ['admin']
           }
       },
       {

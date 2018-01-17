@@ -11,13 +11,21 @@ import swal from 'sweetalert2';
 export class AdduserComponent {
   showLoad:boolean = false;
   leads = [];
-  userRoles = ["Member","Leader","Administrator"];
+  userRoles = ["Member","Leader","Admin"];
+  selectedUserRole = "Member";
+  selectedLead = "None";
   constructor(private userService : UserService){
     this.userService.loadLeads()
     .subscribe(leads => {
       this.leads = leads;
+      this.leads.unshift("None");
     })
   }
+
+  selectChangeHandler(event:any)
+{
+console.log(event.target.value);
+}
 
   employeeInfoForm = new FormGroup({
     userEmail: new FormControl('', [Validators.email,Validators.required]),
@@ -30,8 +38,8 @@ export class AdduserComponent {
     this.showLoad=true;
     var user = { 
       username : this.employeeInfoForm.get('userEmail').value,
-      userrole : this.employeeInfoForm.get('empType').value,
-      leaderId : this.employeeInfoForm.get('leaderID').value
+      userrole : this.selectedUserRole,
+      leaderid : this.selectedLead
   };
   console.log(user);
     this.userService.registerUser(user)

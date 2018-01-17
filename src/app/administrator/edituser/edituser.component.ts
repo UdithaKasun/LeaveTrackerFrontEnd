@@ -18,18 +18,23 @@ export class EdituserComponent  {
   employees = [];
   employeeCtrl: FormControl;
   filteredEmpObs: Observable<any[]>;
-  
-  userRoles = ["Normal","Leader","Administrator"];
+  selectedUserRole = "Member";
+  selectedLead = "None";
+  selectedUser = "";
+  userFound = false;
+
+  userRoles = ["Member","Leader"];
   constructor(private userService : UserService, private leaderService:LeaderServiceService){
     this.employeeCtrl = new FormControl();
     this.userService.loadLeads()
     .subscribe(leads => {
       this.leads = leads;
+      this.leads.unshift("None");
     })
 
-    leaderService.getleaderMembers().subscribe(Response => {
+    userService.getUsers().subscribe(Response => {
       for (var i = 0; i < Response.length; i++) {
-        this.employees.push({ employeeID: Response[i].username })
+        this.employees.push({ username: Response[i].username , userrole: Response[i].userrole , leaderid: Response[i].leaderid  })
       }
       this.filteredEmpObs = this.employeeCtrl.valueChanges
         .pipe(
@@ -42,12 +47,19 @@ export class EdituserComponent  {
   filteredEmp(employeeID: string) {
     console.log("Here : " + employeeID);
     return this.employees.filter(state =>
-      state.employeeID.toLowerCase().indexOf(employeeID.toLowerCase()) === 0);
+      state.username.toLowerCase().indexOf(employeeID.toLowerCase()) === 0);
+  }
+
+  selectMember(selectedEmp){
+    console.log(selectedEmp);
+    this.userFound = true;
+    this.selectedLead = selectedEmp.leaderid;
+    this.selectedUserRole = selectedEmp.userrole;
+    this.selectedUser = selectedEmp.username;
   }
 
   employeeInfoForm = new FormGroup({
-    userEmail: new FormControl('', [Validators.email,Validators.required]),
-    empType: new FormControl('Normal', []),
+    empType: new FormControl('Member', []),
     leaderID : new FormControl('', [])
   });
 
@@ -56,7 +68,7 @@ export class EdituserComponent  {
     var user = { 
       username : this.employeeInfoForm.get('userEmail').value,
       userrole : this.employeeInfoForm.get('empType').value,
-      leaderId : this.employeeInfoForm.get('leaderID').value
+      leaderid : this.employeeInfoForm.get('leaderID').value
   };
   console.log(user);
     this.userService.registerUser(user)
@@ -73,12 +85,24 @@ export class EdituserComponent  {
     })    
   }
 
-  addNewEmployeeAddress() {
-    this.employeeInfoForm.reset();
-    this.submitted = false;
+  updateUser(){
+    var userDetails = {};
+    userDetails['username'] = this.selectedUser;
+    userDetails['userrole'] = this.selectedUserRole;
+    userDetails['leaderid'] = this.selectedLead;
+    console.log(userDetails);
+
+    this.userService.updateUser(userDetails)
+    .subscribe(response => {
+      swal("Success","User Updated Successfully","info");
+    },err=>{
+      if(err.errors.username != undefined && err.errors.username=="is already taken."){
+        swal("Error","User Already Exist","error");
+      }
+      else {
+        swal("Error","User Update Failed","error");
+      }
+    }) 
   }
 
-  resetForm(){
-    this.employeeInfoForm.get('userEmail').setValue("");
-  }
 }

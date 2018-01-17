@@ -27,16 +27,16 @@
             <div class="form-group">
                 <label for="userRole">User Role</label>
                 <div class="select">
-                    <select id="userRole" formControlName="empType" >
-                        <option [value]="userrole" *ngFor="let userrole of userRoles;let i = index" [selected]="i == 0" >{{ userrole }}</option>
+                    <select id="userRole" formControlName="empType" [(ngModel)]="selectedUserRole">
+                        <option [value]="userrole" *ngFor="let userrole of userRoles" >{{ userrole }}</option>
                     </select>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" *ngIf="selectedUserRole !='Admin'">
                 <label for="leader">Lead</label>
                 <div class="select">
-                    <select id="leader" formControlName="leaderID" >
-                        <option [value]="lead" *ngFor="let lead of leads;let i = index" [selected]="i == 0" >{{ lead }}</option>
+                    <select id="leader" formControlName="leaderID" [(ngModel)]="selectedLead">
+                        <option [value]="lead" *ngFor="let lead of leads" >{{ lead }}</option>
                     </select>
                 </div>
             </div>

@@ -33,6 +33,7 @@ import { EdituserComponent } from './administrator/edituser/edituser.component';
 import { AdminVerticalnavComponent } from './shared/admin-verticalnav/admin-verticalnav.component';
 import { LeaderServiceService } from '../app/services/leader-service.service';
 import { LeaveDashboardComponent } from './leader/leave-dashboard/leave-dashboard.component';
+import { ChangePasswordComponent } from './shared/change-password/change-password.component';
 
 
 
@@ -55,7 +56,8 @@ import { LeaveDashboardComponent } from './leader/leave-dashboard/leave-dashboar
     AdduserComponent,
     EdituserComponent,
     AdminVerticalnavComponent,
-    LeaveDashboardComponent
+    LeaveDashboardComponent,
+    ChangePasswordComponent
   ],
   imports: [
     routing,

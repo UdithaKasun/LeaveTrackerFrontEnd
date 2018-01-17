@@ -1,14 +1,14 @@
-<form class="form" [formGroup]="employeeInfoForm" (ngSubmit)="onSubmit()" [hidden]="submitted">
+<form class="form" [formGroup]="employeeInfoForm" (ngSubmit)="updateUser()" [hidden]="submitted">
     <section class="form-block">
         <label><clr-icon shape="user" class="has-badge"></clr-icon> Edit User</label>
         <hr>
                             <div class="cardaa" align="left">
                                     <form class="example-form">
                                         <mat-form-field>
-                                            <input matInput placeholder="Search Employee" width="250px" aria-label="Search Employee" [matAutocomplete]="auto" [formControl]="employeeCtrl">
+                                            <input matInput placeholder="Search Employee" width="341px" aria-label="Search Employee" [matAutocomplete]="auto" [formControl]="employeeCtrl">
                                             <mat-autocomplete #auto="matAutocomplete">
-                                                <mat-option *ngFor="let emp of filteredEmpObs | async" [value]="emp.employeeID" (click)="selectMember(emp.employeeID)">
-                                                    <span>{{ emp.employeeID }}</span>
+                                                <mat-option *ngFor="let emp of filteredEmpObs | async" [value]="emp.username" (click)="selectMember(emp)">
+                                                    <span>{{ emp.username }}</span>
                                                 </mat-option>
                                             </mat-autocomplete>
                                         </mat-form-field>
@@ -17,23 +17,21 @@
             <div class="form-group">
                 <label for="userRole">User Role</label>
                 <div class="select">
-                    <select id="userRole" formControlName="empType" >
-                        <option [value]="userrole" *ngFor="let userrole of userRoles;let i = index" [selected]="i == 0" >{{ userrole }}</option>
+                    <select id="userRole" formControlName="empType"  [(ngModel)]="selectedUserRole">
+                        <option [value]="userrole" *ngFor="let userrole of userRoles;let i = index" [selected]="i == 0">{{ userrole }}</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
                 <label for="leader">Lead</label>
                 <div class="select">
-                    <select id="leader" formControlName="leaderID" >
+                    <select id="leader" formControlName="leaderID"  [(ngModel)]="selectedLead">
                         <option [value]="lead" *ngFor="let lead of leads;let i = index" [selected]="i == 0" >{{ lead }}</option>
                     </select>
                 </div>
             </div>
         <button class="btn btn-primary"
             type="submit"
-            [disabled]="employeeInfoForm.invalid">Update User</button>
-        <button class="btn btn-danger"
-            type="button" (click)="resetForm()">Reset</button>
+            [disabled]="userFound == false">Update User</button>
     </section>
 </form>

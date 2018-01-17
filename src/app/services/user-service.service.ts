@@ -44,8 +44,26 @@ export class UserService {
     );
   }
 
+  updateUser(userdetails) {
+    return this.apiService.put('/users', {user: userdetails})
+    .map(
+      data => {
+        return data;
+      }
+    );
+  }
+
   loadLeads() {
     return this.apiService.get('/leaders')
+    .map(
+      data => {
+        return data;
+      }
+    );
+  }
+
+  getUsers() {
+    return this.apiService.get('/systemusers')
     .map(
       data => {
         return data;
