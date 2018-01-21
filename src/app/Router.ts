@@ -14,6 +14,7 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 import { AdministratorComponent } from './administrator/administrator.component';
 import { AdduserComponent } from './administrator/adduser/adduser.component';
 import { EdituserComponent } from './administrator/edituser/edituser.component';
+import { ChangePasswordComponent } from './shared/change-password/change-password.component';
 
 export const routes: Routes = [  
       {
@@ -34,10 +35,14 @@ export const routes: Routes = [
             { path: 'leaveHistory', component: LeaveHistoryComponent
             },
             { path: 'leaveCalendar', component: LeaveCalendarComponent
+            },
+            {
+              path: 'changepassword', 
+              component : ChangePasswordComponent,
             }
           ]
           ,data: { 
-            expectedRole: ['member']
+            expectedRole: ['member','admin','leader']
           }
       },
       {
@@ -50,7 +55,8 @@ export const routes: Routes = [
           { path: 'leaveCalendar', component: LeaveCalendarComponent },
           { path: 'pendingApproval', component: PendingApprovalComponent },
           { path: 'unplannedLeaves', component: UnplannedLeavesComponent },
-          { path: 'memberLeaveHistory', component: MemberLeaveHistoryComponent }
+          { path: 'memberLeaveHistory', component: MemberLeaveHistoryComponent },
+          { path: 'changepassword', component : ChangePasswordComponent }
         ]
         , data: { 
           expectedRole: ['leader']
@@ -63,7 +69,8 @@ export const routes: Routes = [
         children: [
             { path: '', redirectTo: 'adduser', pathMatch: 'full' },
             { path: 'adduser', component: AdduserComponent },
-            { path: 'edituser', component: EdituserComponent }
+            { path: 'edituser', component: EdituserComponent },
+            { path: 'changepassword', component : ChangePasswordComponent }
           ]
           ,
           data: { 

@@ -53,6 +53,23 @@ export class UserService {
     );
   }
 
+  changePassword(userdetails) {
+    return this.apiService.post('/users/changepassword', {user: userdetails})
+    .map(
+      data => {
+        return data;
+      }
+    );
+  }
+
+  resetAccount(userdetails) {
+    return this.apiService.post('/users/resetAccount', {user: userdetails})
+    .map(
+      data => {
+        return data;
+      }
+    );
+  }
   loadLeads() {
     return this.apiService.get('/leaders')
     .map(

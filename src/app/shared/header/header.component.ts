@@ -23,4 +23,8 @@ export class HeaderComponent implements OnInit {
     this.router.navigateByUrl('/login');
   }
 
+  changePassword(){
+    this.router.navigateByUrl('/changepassword');
+  }
+
 }
